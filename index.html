@@ -3,15 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#F8F6F1">
 
 <title>Lead routing and workflow automation for small businesses | Prudie.dev</title>
-<meta name="description" content="Grace Ene builds self-hosted n8n automations for small businesses. Leads get routed, enriched, and logged in seconds, with retries and alerts when a step fails. Fixed price, agreed before work starts.">
+<meta name="description" content="Stop losing leads to broken handoffs. I build the workflows that route, follow up, and report automatically, for a fixed price agreed before work starts.">
 <link rel="canonical" href="https://prudie.dev/">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://prudie.dev/">
 <meta property="og:title" content="Lead routing and workflow automation for small businesses">
-<meta property="og:description" content="Your leads go cold in the gap between your tools. I close that gap in about a week, for a fixed price.">
+<meta property="og:description" content="Stop losing leads to broken handoffs. I build the workflows that route, follow up, and report automatically, for a fixed price.">
 <meta property="og:image" content="https://prudie.dev/grace@2x.jpg">
 <meta name="twitter:card" content="summary_large_image">
 
@@ -21,15 +22,20 @@
 
 <style>
   :root{
-    --paper:#E9EBE5;
-    --paper-lift:#F3F4F0;
-    --ink:#1B211C;
-    --ink-soft:#56605A;
-    --rule:#C7CCC1;
-    --teal:#1F6F6B;
-    --amber:#B5822A;
+    --paper:#F8F6F1;
+    --paper-lift:#FFFFFF;
+    --ink:#1B2A4A;
+    --ink-soft:#3E5266;
+    --rule:#E3E1DA;
+    --teal:#22A794;
+    --blue:#2B7FFE;
+    --violet:#5867EF;
+    --gradient:linear-gradient(135deg,#22A794 0%,#2B7FFE 50%,#5867EF 100%);
     --measure:62ch;
     --gutter:clamp(1.25rem,5vw,4.5rem);
+    --shadow-sm:0 1px 2px rgba(10,14,28,.08);
+    --shadow-md:0 18px 36px -20px rgba(10,14,28,.24);
+    --ease:cubic-bezier(.22,.8,.32,1);
   }
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
@@ -41,50 +47,78 @@
   }
   h1,h2,h3,.ui{font-family:Archivo,system-ui,sans-serif}
   a{color:inherit}
-  :focus-visible{outline:2px solid var(--teal);outline-offset:3px}
+  :focus-visible{outline:2px solid var(--blue);outline-offset:3px}
   img{max-width:100%;display:block}
+  svg{display:block}
 
   .wrap{max-width:72rem;margin:0 auto;padding-inline:var(--gutter)}
 
-  .masthead{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;padding-block:1.75rem}
+  /* scroll progress */
+  .scroll-progress{position:fixed;top:0;left:0;height:2px;background:var(--gradient);width:0%;z-index:70}
+
+  /* header */
+  .site-header{position:sticky;top:0;z-index:60;background:rgba(248,246,241,.86);backdrop-filter:blur(10px) saturate(1.15);-webkit-backdrop-filter:blur(10px) saturate(1.15);border-bottom:1px solid transparent;transition:border-color .25s var(--ease),box-shadow .25s var(--ease)}
+  .site-header.is-scrolled{border-bottom-color:var(--rule);box-shadow:var(--shadow-sm)}
+  .masthead{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;padding-block:1.5rem}
   .mark{font-family:Archivo;font-weight:600;font-size:1.0625rem;letter-spacing:-0.02em;text-decoration:none}
-  .mark span{color:var(--teal)}
+  .mark span{color:var(--ink)}
   .masthead nav{font-family:Archivo;font-size:0.9375rem;display:flex;gap:1.5rem}
-  .masthead nav a{color:var(--ink-soft);text-decoration:none}
+  .masthead nav a{position:relative;color:var(--ink-soft);text-decoration:none;padding-bottom:3px}
+  .masthead nav a::after{content:"";position:absolute;left:0;right:100%;bottom:0;height:1px;background:var(--blue);transition:right .25s var(--ease)}
   .masthead nav a:hover{color:var(--ink)}
+  .masthead nav a:hover::after{right:0}
   @media (max-width:560px){.masthead nav a:nth-child(1){display:none}}
 
-  .hero{padding-block:clamp(3rem,9vw,6.5rem) clamp(2.5rem,6vw,4rem)}
+  /* hero */
+  .hero{padding-block:clamp(2.5rem,7vw,5rem) clamp(2.5rem,6vw,4rem)}
+  .hero-grid{display:grid;grid-template-columns:1fr;gap:clamp(2.5rem,6vw,4rem);align-items:center}
+  @media (min-width:960px){.hero-grid{grid-template-columns:1.12fr .88fr}}
   h1{font-weight:600;font-size:clamp(2.1rem,1.2rem + 3.6vw,4.05rem);line-height:1.03;letter-spacing:-0.035em;margin:0;max-width:15ch}
   .lede{max-width:var(--measure);margin:1.5rem 0 0;color:var(--ink-soft)}
   .hero-actions{display:flex;flex-wrap:wrap;gap:1rem 1.75rem;align-items:center;margin-top:2.25rem}
   .reassure{font-family:Archivo;font-size:0.8125rem;color:var(--ink-soft);margin-top:1rem}
 
-  .btn{font-family:Archivo;font-weight:500;font-size:0.9375rem;background:var(--ink);color:var(--paper);padding:0.8rem 1.4rem;border-radius:2px;text-decoration:none;display:inline-block;transition:background .15s ease}
-  .btn:hover{background:var(--teal)}
-  .btn-quiet{font-family:Archivo;font-size:0.9375rem;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);padding-bottom:2px}
+  .btn{font-family:Archivo;font-weight:500;font-size:0.9375rem;background:var(--ink);color:var(--paper);padding:0.8rem 1.4rem;border-radius:2px;text-decoration:none;display:inline-block;transition:background .15s ease,transform .15s ease,box-shadow .15s ease}
+  .btn:hover{filter:brightness(1.3);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+  .btn:active{transform:translateY(0)}
+  .btn-quiet{font-family:Archivo;font-size:0.9375rem;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);padding-bottom:2px;transition:color .15s ease,border-color .15s ease}
   .btn-quiet:hover{color:var(--ink);border-color:var(--ink)}
 
-  .rail{margin-top:clamp(3.5rem,8vw,5.5rem)}
-  .rail-track{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:0}
-  .rail-track::before{content:"";position:absolute;left:0;right:0;top:7px;height:1px;background:var(--rule)}
-  .stop{position:relative;padding-top:1.6rem;padding-right:1rem}
-  .stop::before{content:"";position:absolute;top:2px;left:0;width:11px;height:11px;border-radius:50%;background:var(--paper);border:1.5px solid var(--teal)}
-  .stop.is-retry::before{border-color:var(--amber);background:var(--amber)}
-  .stop b{font-family:Archivo;font-weight:500;font-size:0.875rem;display:block;letter-spacing:-0.01em}
-  .stop i{font-style:normal;font-size:0.8125rem;color:var(--ink-soft);display:block;margin-top:0.15rem}
+  /* transform card (before -> after) */
+  .transform-card{background:var(--paper-lift);border:1px solid var(--rule);padding:1.6rem 1.5rem;box-shadow:var(--shadow-sm)}
+  .transform-head{font-family:Archivo;font-weight:600;font-size:.8125rem;color:var(--ink-soft);margin-bottom:1.3rem}
+  .t-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:.6rem;padding-block:.95rem;border-top:1px solid var(--rule)}
+  .t-row:first-of-type{border-top:0;padding-top:0}
+  .t-before,.t-after{display:flex;align-items:center;gap:.65rem;min-width:0}
+  .t-icon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none}
+  .t-before .t-icon{background:var(--paper);border:1px solid var(--rule)}
+  .t-before .t-icon svg{width:14px;height:14px;stroke:var(--ink-soft)}
+  .t-after .t-icon{background-image:var(--gradient)}
+  .t-after .t-icon svg{width:14px;height:14px;stroke:#fff}
+  .t-row b{font-family:Archivo;font-weight:600;font-size:.875rem;display:block;line-height:1.2}
+  .t-before b{color:var(--ink-soft)}
+  .t-after b{color:var(--ink)}
+  .t-row i{font-style:normal;font-size:.75rem;color:var(--ink-soft);display:block;margin-top:.1rem;line-height:1.3}
+  .t-arrow{font-family:Archivo;color:var(--rule);font-size:1rem}
   @media (prefers-reduced-motion:no-preference){
-    .stop{opacity:0;transform:translateY(4px);animation:stopIn .5s ease forwards}
-    .stop:nth-child(1){animation-delay:.15s}.stop:nth-child(2){animation-delay:.3s}
-    .stop:nth-child(3){animation-delay:.45s}.stop:nth-child(4){animation-delay:.6s}
-    .stop:nth-child(5){animation-delay:.75s}
-    @keyframes stopIn{to{opacity:1;transform:none}}
+    .t-arrow{display:inline-block;animation:arrowPulse 1.8s ease-in-out infinite}
+    @keyframes arrowPulse{0%,100%{transform:translateX(0);opacity:.6}50%{transform:translateX(3px);opacity:1}}
+    .t-row{opacity:0;transform:translateY(8px);animation:tRowIn .55s var(--ease) forwards}
+    .t-row:nth-child(2){animation-delay:.1s}
+    .t-row:nth-child(3){animation-delay:.3s}
+    .t-row:nth-child(4){animation-delay:.5s}
+    @keyframes tRowIn{to{opacity:1;transform:none}}
   }
-  @media (max-width:680px){
-    .rail-track{grid-template-columns:1fr;gap:1.1rem}
-    .rail-track::before{left:5px;right:auto;top:6px;bottom:6px;width:1px;height:auto}
-    .stop{padding-top:0;padding-left:1.75rem}
-    .stop::before{top:5px}
+  @media (max-width:520px){
+    .t-row{grid-template-columns:1fr;gap:.4rem}
+    .t-arrow{display:none}
+  }
+
+  /* scroll reveal */
+  .reveal{opacity:1;transform:none}
+  @media (prefers-reduced-motion:no-preference){
+    html.js .reveal{opacity:0;transform:translateY(16px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+    html.js .reveal.is-visible{opacity:1;transform:none}
   }
 
   section{padding-block:clamp(3.5rem,8vw,6rem)}
@@ -95,25 +129,48 @@
 
   /* pain */
   .pain{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem}
+  .pain > div{border-top:2px solid var(--teal);padding-top:1rem;transition:transform .2s var(--ease)}
+  .pain > div:nth-child(2){border-top-color:var(--blue)}
+  .pain > div:nth-child(3){border-top-color:var(--violet)}
+  .pain > div:hover{transform:translateY(-3px)}
+  .pain-icon{width:34px;height:34px;border:1px solid var(--rule);background:var(--paper-lift);display:flex;align-items:center;justify-content:center;margin-bottom:1rem}
+  .pain-icon svg{width:17px;height:17px;stroke:var(--teal)}
+  .pain > div:nth-child(2) .pain-icon svg{stroke:var(--blue)}
+  .pain > div:nth-child(3) .pain-icon svg{stroke:var(--violet)}
   .pain h3{margin:0 0 .5rem;font-weight:600;font-size:1rem;letter-spacing:-0.015em}
   .pain p{margin:0;color:var(--ink-soft);font-size:0.9375rem}
-  .pain > div{border-top:2px solid var(--teal);padding-top:1rem}
   @media (max-width:760px){.pain{grid-template-columns:1fr;gap:1.5rem}}
+
+  /* compare */
+  .compare{display:grid;grid-template-columns:1fr;gap:1px;background:var(--rule);border:1px solid var(--rule)}
+  @media (min-width:640px){.compare{grid-template-columns:1fr 1fr}}
+  .compare-col{background:var(--paper-lift);padding:1.5rem 1.6rem}
+  .compare-head{font-family:Archivo;font-weight:600;font-size:.8125rem;letter-spacing:.01em;margin-bottom:1rem;color:var(--ink-soft)}
+  .compare-col.is-good{background:var(--paper-lift)}
+  .compare-col.is-good .compare-head{color:var(--ink)}
+  .compare ul{list-style:none;margin:0;padding:0;display:grid;gap:.7rem}
+  .compare li{display:flex;gap:.65rem;align-items:flex-start;font-size:.9375rem}
+  .compare li span{flex:none;font-family:Archivo;font-weight:600;line-height:1.5}
+  .compare-col:not(.is-good) li span{color:var(--ink-soft)}
+  .compare-col.is-good li span{color:var(--ink)}
 
   /* offers */
   .offers{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--rule);background:var(--paper-lift)}
-  .offer{padding:1.75rem 1.6rem 2rem;border-left:1px solid var(--rule);display:flex;flex-direction:column}
+  .offer{padding:1.75rem 1.6rem 2rem;border-left:1px solid var(--rule);display:flex;flex-direction:column;transition:background .2s ease}
   .offer:first-child{border-left:0}
-  .offer.is-lead{background:var(--paper);box-shadow:inset 0 3px 0 var(--teal)}
+  .offer:hover{background:var(--paper)}
+  .offer.is-lead{background:var(--paper-lift);position:relative}
+  .offer.is-lead::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background-image:var(--gradient)}
+  .offer.is-lead:hover{background:var(--paper-lift)}
   .offer h3{margin:0;font-weight:600;font-size:1.0625rem;letter-spacing:-0.02em}
-  .offer .for{font-size:0.875rem;color:var(--teal);margin-top:.25rem}
+  .offer .for{font-size:0.875rem;color:var(--ink);font-weight:500;margin-top:.25rem}
   .offer .price{font-family:Archivo;font-weight:600;font-size:1.9rem;letter-spacing:-0.035em;margin:1.1rem 0 0.15rem}
   .offer .price small{font-size:1rem;font-weight:500}
   .offer .terms{font-family:Archivo;font-size:0.8125rem;color:var(--ink-soft)}
   .offer > p{font-size:0.9375rem;color:var(--ink-soft);margin:1rem 0 1.25rem}
   .offer ul{margin:0 0 1.75rem;padding:0;list-style:none;font-size:0.9375rem}
   .offer li{padding:0.45rem 0;border-top:1px solid var(--rule)}
-  .offer .btn,.offer .btn-quiet{margin-top:auto;align-self:flex-start}
+  .offer .btn,.offer .btn-quiet{margin-top:auto;align-self:center}
   @media (max-width:820px){
     .offers{grid-template-columns:1fr}
     .offer{border-left:0;border-top:1px solid var(--rule)}
@@ -123,7 +180,7 @@
   /* testimonials */
   .quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule)}
   .quote{background:var(--paper-lift);padding:1.6rem}
-  .stars{color:var(--amber);font-family:Archivo;font-size:.9rem;letter-spacing:.12em}
+  .stars{color:#B5822A;font-family:Archivo;font-size:.9rem;letter-spacing:.12em}
   .stars span{color:var(--ink-soft);letter-spacing:0;margin-left:.4rem;font-size:.8125rem}
   .quote blockquote{margin:.9rem 0 1.1rem;font-size:0.9375rem}
   .quote cite{font-style:normal;font-family:Archivo;font-size:0.8125rem;color:var(--ink-soft);display:block;line-height:1.5}
@@ -131,31 +188,61 @@
   @media (max-width:820px){.quotes{grid-template-columns:1fr}}
 
   /* about */
-  .about{display:grid;grid-template-columns:260px 1fr;gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
-  .about img{border:1px solid var(--rule);filter:saturate(.95)}
-  .about p{margin:0 0 1rem;max-width:var(--measure)}
-  .about p:last-of-type{margin-bottom:1.75rem}
-  @media (max-width:760px){.about{grid-template-columns:1fr}.about img{max-width:220px}}
+  .about{display:grid;grid-template-columns:300px 1fr;gap:clamp(1.5rem,4vw,3.5rem);align-items:start}
+  .about-photo img{width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;border:1px solid var(--rule);filter:saturate(.95)}
+  .about-name{margin-top:1rem}
+  .about-name b{display:block;font-family:Archivo;font-weight:600;font-size:1rem;letter-spacing:-0.01em}
+  .about-name span{display:block;font-family:Archivo;font-size:.8125rem;color:var(--ink-soft);margin-top:.15rem}
+  .about-stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:1.5rem}
+  .about-stats div{background:var(--paper-lift);padding:.85rem .9rem}
+  .about-stats b{display:block;font-family:Archivo;font-weight:600;font-size:.875rem;letter-spacing:-0.01em}
+  .about-stats i{font-style:normal;display:block;margin-top:.2rem;font-size:.75rem;color:var(--ink-soft);line-height:1.35}
+  .about-bio p{margin:0 0 1rem;max-width:var(--measure)}
+  .about-bio p:last-of-type{margin-bottom:1.75rem}
+  .about-bio p a{color:var(--blue)}
+  @media (max-width:760px){.about{grid-template-columns:1fr}.about-photo img{max-width:220px}.about-photo{max-width:300px}}
+
+  .tools-strip{border-top:1px solid var(--rule);margin-top:clamp(2.5rem,6vw,4rem);padding-top:1.5rem}
+  .tools-label{font-family:Archivo;font-size:.8125rem;color:var(--ink-soft);margin-bottom:1rem}
+  .tools-row{display:flex;flex-wrap:wrap;gap:1.5rem 2.25rem;align-items:center}
+  .tools-row span{font-family:Archivo;font-weight:600;font-size:1rem;color:var(--ink);letter-spacing:-0.01em;opacity:.75}
 
   /* cases */
-  .cases{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule)}
-  .case{background:var(--paper-lift);padding:1.6rem;display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:start}
-  .case h3{margin:0 0 .4rem;font-weight:600;font-size:1.0625rem;letter-spacing:-0.02em}
-  .case p{margin:0;color:var(--ink-soft);font-size:0.9375rem;max-width:58ch}
-  .status{font-family:Archivo;font-size:0.75rem;font-weight:500;color:var(--ink-soft);white-space:nowrap;display:flex;align-items:center;gap:.45rem}
-  .status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--amber);flex:none}
+  .cases{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--rule);background:var(--paper-lift)}
+  .case{padding:1.75rem 1.6rem 2rem;border-left:1px solid var(--rule);display:flex;flex-direction:column;transition:background .2s ease;text-decoration:none;color:inherit}
+  .case:first-child{border-left:0}
+  .case:not(.is-empty):hover{background:var(--paper)}
+  .case.is-empty{cursor:default}
+  .case h3{margin:0 0 .5rem;font-weight:600;font-size:1.0625rem;letter-spacing:-0.02em}
+  .case p{margin:0;color:var(--ink-soft);font-size:0.9375rem}
+  .case-status{font-family:Archivo;font-size:0.75rem;font-weight:500;color:var(--ink-soft);white-space:nowrap;display:inline-flex;align-items:center;gap:.45rem;margin-bottom:.9rem}
+  .case-status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--blue);flex:none}
+  .case-more{margin-top:1rem;padding-top:1rem;border-top:1px solid var(--rule);font-family:Archivo;font-size:0.8125rem;font-weight:500;color:var(--blue)}
+  .case:not(.is-empty):hover .case-more{text-decoration:underline}
   .case.is-empty{background:transparent}
   .case.is-empty h3{color:var(--ink-soft);font-weight:500}
-  .case.is-empty .status::before{background:var(--rule)}
+  .case.is-empty .case-status::before{background:var(--rule)}
+  @media (max-width:820px){
+    .cases{grid-template-columns:1fr}
+    .case{border-left:0;border-top:1px solid var(--rule)}
+    .case:first-child{border-top:0}
+  }
 
   /* faq */
-  .faq dt{font-family:Archivo;font-weight:500;font-size:1rem;letter-spacing:-0.015em;border-top:1px solid var(--rule);padding-top:1.1rem;margin-top:1.5rem}
-  .faq dd{margin:.6rem 0 0;color:var(--ink-soft);max-width:var(--measure)}
-  .faq{margin:0}
+  .faq{display:grid}
+  .faq-item{display:grid;grid-template-columns:1fr;gap:.6rem;border-top:1px solid var(--rule);padding-block:1.35rem}
+  .faq-item:first-child{border-top:1px solid var(--rule)}
+  .faq-item h3{font-family:Archivo;font-weight:500;font-size:1rem;letter-spacing:-0.015em;margin:0}
+  .faq-item p{margin:0;color:var(--ink-soft)}
+  .faq-answer p + p{margin-top:.75rem}
+  @media (min-width:760px){
+    .faq-item{grid-template-columns:minmax(220px,300px) 1fr;gap:2.5rem;align-items:baseline}
+  }
 
-  .book{border-top:1px solid var(--rule);padding-block:clamp(3rem,7vw,5rem)}
-  .book h2{max-width:20ch;font-size:clamp(1.6rem,1.2rem + 1.6vw,2.4rem);line-height:1.1}
-  .book p{max-width:var(--measure);color:var(--ink-soft);margin:1rem 0 2rem}
+  .book{border-top:1px solid var(--rule);padding-block:clamp(3rem,7vw,5rem);text-align:center}
+  .book h2{max-width:20ch;margin-inline:auto;font-size:clamp(1.6rem,1.2rem + 1.6vw,2.4rem);line-height:1.1}
+  .book p{max-width:var(--measure);margin:1rem auto 2rem;color:var(--ink-soft)}
+  .book .reassure{margin-top:1rem}
 
   footer{border-top:1px solid var(--rule);padding-block:2rem 3rem;font-family:Archivo;font-size:0.8125rem;color:var(--ink-soft);display:flex;flex-wrap:wrap;gap:.75rem 2rem;justify-content:space-between}
   footer a{color:var(--ink-soft)}
@@ -163,60 +250,126 @@
 </head>
 <body>
 
-<header class="wrap masthead">
-  <a class="mark" href="/">prudie<span>.dev</span></a>
-  <nav>
-    <a href="#offers">Pricing</a>
-    <a href="#cases">Case studies</a>
-    <a href="#about">About</a>
-    <a href="#faq">FAQ</a>
-    <a href="#book">Book a call</a>
-  </nav>
+<div class="scroll-progress" aria-hidden="true"></div>
+
+<header class="site-header">
+  <div class="wrap masthead">
+    <a class="mark" href="/">prudie<span>.dev</span></a>
+    <nav>
+      <a href="#offers">Pricing</a>
+      <a href="#cases">Case studies</a>
+      <a href="#about">About</a>
+      <a href="#faq">FAQ</a>
+      <a href="#book">Book a call</a>
+    </nav>
+  </div>
 </header>
 
 <main>
   <div class="wrap hero">
-    <h1>Your leads go cold in the gap between your tools.</h1>
-    <p class="lede">A form fills in. Someone sees it an hour later, copies the details into the CRM, guesses who should own it, and pings the rep in Slack. By then the buyer has already talked to someone else. I close that gap so the whole handoff finishes in seconds, every time, and tells you the moment something breaks.</p>
-    <div class="hero-actions">
-      <a class="btn" href="#book">Book a 20-minute call</a>
-      <a class="btn-quiet" href="#offers">See pricing</a>
-    </div>
-    <p class="reassure">Fixed price agreed before work starts. You keep the code, the workflows, and the login.</p>
-
-    <div class="rail" aria-label="How a lead moves through a build">
-      <div class="rail-track">
-        <div class="stop"><b>Intake</b><i>Form or webhook fires</i></div>
-        <div class="stop"><b>Enrich</b><i>Fill the missing fields</i></div>
-        <div class="stop"><b>Decide</b><i>Apply your routing rules</i></div>
-        <div class="stop"><b>Write</b><i>Log it and alert the owner</i></div>
-        <div class="stop is-retry"><b>Recover</b><i>Retry, then page you</i></div>
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <h1>Stop losing leads to broken handoffs.</h1>
+        <p class="lede">A new lead should reach the right person in seconds, not sit in an inbox while someone remembers to follow up. I build the workflows that route, follow up, and report automatically, so your team spends less time chasing work and more time closing business.</p>
+        <div class="hero-actions">
+          <a class="btn" href="#book">Book a 20-minute call</a>
+          <a class="btn-quiet" href="#offers">See pricing</a>
+        </div>
+        <p class="reassure">Fixed price agreed before work starts. You own the code, workflows, and infrastructure.</p>
       </div>
+
+      <aside class="transform-card" aria-labelledby="transform-heading">
+        <div class="transform-head" id="transform-heading">What changes</div>
+        <div class="t-row">
+          <div class="t-before">
+            <span class="t-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span>
+            <span><b>Hours</b><i>Before a lead gets touched</i></span>
+          </div>
+          <span class="t-arrow" aria-hidden="true">&#8594;</span>
+          <div class="t-after">
+            <span class="t-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 4 14h6l-1 7 9-11h-6l1-7z"/></svg></span>
+            <span><b>Seconds</b><i>From form to owner</i></span>
+          </div>
+        </div>
+        <div class="t-row">
+          <div class="t-before">
+            <span class="t-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 3 20h18L12 4z"/><path d="M12 10v4M12 17h.01"/></svg></span>
+            <span><b>Silent</b><i>When something breaks</i></span>
+          </div>
+          <span class="t-arrow" aria-hidden="true">&#8594;</span>
+          <div class="t-after">
+            <span class="t-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h4l2 3h4l2-3h4"/><path d="M4 12V6a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v6"/><path d="M4 12v6a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-6"/></svg></span>
+            <span><b>Alerted</b><i>Failures retry, then you get notified</i></span>
+          </div>
+        </div>
+        <div class="t-row">
+          <div class="t-before">
+            <span class="t-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v4a4 4 0 0 0 4 4h2a4 4 0 0 0 4-4V4"/><path d="M12 12v8"/></svg></span>
+            <span><b>Depends</b><i>On who remembers what</i></span>
+          </div>
+          <span class="t-arrow" aria-hidden="true">&#8594;</span>
+          <div class="t-after">
+            <span class="t-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></span>
+            <span><b>Automatic</b><i>The same process runs every time</i></span>
+          </div>
+        </div>
+      </aside>
     </div>
   </div>
 
-  <section id="problems" class="wrap">
+  <section id="problems" class="wrap reveal">
     <div class="sec-head">
-      <h2>Where the time actually goes</h2>
-      <p>Three patterns show up in almost every small business I talk to.</p>
+      <h2>The work nobody should be doing manually</h2>
+      <p>Most small businesses don't have a people problem. They have a process problem.</p>
     </div>
     <div class="pain">
       <div>
-        <h3>Someone is the integration</h3>
-        <p>One person moves data between four tools by hand every morning. The business runs on their memory, and it stops when they take a week off.</p>
+        <div class="pain-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></div>
+        <h3>Your team becomes the integration</h3>
+        <p>Someone spends part of every day copying leads between forms, CRMs, inboxes, spreadsheets, and other tools. If they're out sick or miss a step, the process breaks.</p>
       </div>
       <div>
-        <h3>Automations fail in silence</h3>
-        <p>A Zap broke in March. You found out in June, when a client asked why they were never contacted. Nothing told anyone.</p>
+        <div class="pain-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 3 20h18L12 4z"/><path d="M12 10v4M12 17h.01"/></svg></div>
+        <h3>Your automations fail without telling you</h3>
+        <p>A workflow stops running, and nobody knows. You find out weeks later when a lead says they never heard back.</p>
       </div>
       <div>
-        <h3>The tool bill keeps climbing</h3>
-        <p>Per-task pricing rises with every lead you win, so growing costs more than it should for work a server can do for the price of coffee.</p>
+        <div class="pain-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-6 4 4 6-8"/><path d="M15 6h5v5"/></svg></div>
+        <h3>Growing gets more expensive than it should</h3>
+        <p>Per-task automation fees grow with your lead volume. You shouldn't have to keep paying more for the same repetitive work as your business grows.</p>
       </div>
     </div>
   </section>
 
-  <section id="offers" class="wrap">
+  <section id="compare" class="wrap reveal">
+    <div class="sec-head">
+      <h2>Before vs. after</h2>
+    </div>
+    <div class="compare" aria-label="Before and after automation">
+      <div class="compare-col">
+        <div class="compare-head">Without automation</div>
+        <ul>
+          <li><span>&#10005;</span>Leads sit untouched while someone remembers to follow up</li>
+          <li><span>&#10005;</span>Broken workflows fail silently</li>
+          <li><span>&#10005;</span>Employees manually move data between tools</li>
+          <li><span>&#10005;</span>Lead routing depends on someone's availability</li>
+          <li><span>&#10005;</span>Automation costs increase with every task</li>
+        </ul>
+      </div>
+      <div class="compare-col is-good">
+        <div class="compare-head">With a system built around your business</div>
+        <ul>
+          <li><span>&#10003;</span>Leads reach the right person automatically</li>
+          <li><span>&#10003;</span>Failed workflows retry and alert you</li>
+          <li><span>&#10003;</span>Data moves between tools without manual work</li>
+          <li><span>&#10003;</span>Routing follows your rules every time</li>
+          <li><span>&#10003;</span>You own the infrastructure instead of renting a black box</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="offers" class="wrap reveal">
     <div class="sec-head">
       <h2>Pricing</h2>
       <p>One number, agreed in writing before anything is built.</p>
@@ -278,7 +431,7 @@
     The .quotes / .quote / .stars CSS is still in the stylesheet above,
     so the markup is:
 
-    <section id="reviews" class="wrap">
+    <section id="reviews" class="wrap reveal">
       <div class="sec-head">
         <h2>What clients say</h2>
         <p>Every quote here comes from a finished project.</p>
@@ -296,85 +449,159 @@
     the quote and the attribution before it goes live.
   -->
 
-  <section id="about" class="wrap">
+  <section id="about" class="wrap reveal">
     <div class="sec-head">
-      <h2>Who you would be working with</h2>
-      <p>One person, doing the build, answering your email.</p>
+      <h2>Who you'll be working with</h2>
+      <p>The person who scopes it is the person who builds it.</p>
     </div>
     <div class="about">
-      <img src="grace.jpg" srcset="grace.jpg 640w, grace@2x.jpg 1280w" sizes="(max-width:760px) 220px, 260px" width="640" height="640" alt="Grace Ene, automation consultant at Prudie.dev">
-      <div>
-        <p>I am Grace Ene. I spent about eight years in revenue operations and customer success at B2B software companies, which means I have lived on the receiving end of every broken handoff on this page. I have also been the person who kept a business running with a spreadsheet and a lot of manual patience.</p>
-        <p>Then I built and shipped <a href="https://investwithprudie.com">Invest with Prudie</a>, a financial education platform with payments, authentication, automated email, and production infrastructure. It runs. That combination is the whole pitch: I understand how a small revenue team actually works, and I can build the system myself, which is what most people in this space outsource.</p>
-        <p>I work with US small businesses, remotely, from Los Angeles. You get me for the whole project, from the first call to the handover.</p>
+      <div class="about-photo">
+        <img src="grace.jpg" srcset="grace.jpg 640w, grace@2x.jpg 1280w" sizes="(max-width:760px) 220px, 300px" width="640" height="640" loading="lazy" decoding="async" alt="Grace Ene, automation consultant at Prudie.dev">
+        <div class="about-name">
+          <b>Grace Ene</b>
+          <span>Automation Consultant at Prudie.dev</span>
+        </div>
+        <div class="about-stats">
+          <div><b>8 years</b><i>Customer Success + Revenue Operations</i></div>
+          <div><b>B2B SaaS</b><i>Experience inside revenue teams</i></div>
+          <div><b>Built &amp; shipped</b><i>Invest with Prudie</i></div>
+          <div><b>100% direct</b><i>No sales rep &#8594; project manager &#8594; developer chain</i></div>
+        </div>
+      </div>
+      <div class="about-bio">
+        <p>I'm Grace Ene. Before Prudie.dev, I spent eight years in customer success and revenue operations at B2B software companies. I know what it looks like when a lead gets stuck between systems, a handoff depends on someone's memory, or a team spends Friday afternoon fixing a spreadsheet that should have updated itself.</p>
+        <p>I started building because I wanted to solve those problems at the system level. I also built and shipped <a href="https://investwithprudie.com">Invest with Prudie</a>, a production financial education platform with payments, authentication, automated email, and its own infrastructure.</p>
+        <p>That combination matters. I understand the business problem behind the workflow, and I can build the technical solution myself. You work directly with me from scoping through build, testing, and handover.</p>
+        <p>I work remotely with US small businesses from Los Angeles. There is no account manager or sales-to-engineering handoff. You get the person doing the work.</p>
+        <p>And you don't have to depend on me forever. You own the server, code, workflows, credentials, and documentation. If we stop working together, your system keeps running.</p>
         <a class="btn" href="#book">Book a 20-minute call</a>
+      </div>
+    </div>
+    <div class="tools-strip">
+      <div class="tools-label">Works with the tools your business already uses</div>
+      <div class="tools-row">
+        <span>HubSpot</span>
+        <span>Salesforce</span>
+        <span>Pipedrive</span>
+        <span>Airtable</span>
+        <span>Google Workspace</span>
+        <span>Slack</span>
+        <span>Stripe</span>
       </div>
     </div>
   </section>
 
-  <section id="cases" class="wrap">
+  <section id="cases" class="wrap reveal">
     <div class="sec-head">
       <h2>Case studies</h2>
       <p>Each one ships with the architecture, the code, and a short walkthrough.</p>
     </div>
     <div class="cases">
-      <article class="case">
-        <div>
-          <!-- TEMPORARY - relink when the case study has real numbers -->
-          <h3>Lead routing, from form to CRM to Slack</h3>
-          <p>A submission gets enriched, scored against routing rules, written to the CRM, and announced to the owning rep. Failed steps enter a retry queue, and anything that still fails raises an alert with the payload attached.</p>
-        </div>
-        <div class="status">In progress</div>
+      <a class="case" href="/case-studies/lead-routing/">
+        <div class="case-status">In progress</div>
+        <h3>Lead routing, from form to CRM to Slack</h3>
+        <p>A submission gets enriched, scored against routing rules, written to the CRM, and announced to the owning rep. Failed steps enter a retry queue, and anything that still fails raises an alert with the payload attached.</p>
+        <div class="case-more">Read the case study &#8594;</div>
+      </a>
+      <article class="case is-empty">
+        <div class="case-status">Not started</div>
+        <h3>Second build, coming soon</h3>
+        <p>This slot is reserved for the next system. New builds get published here as they ship.</p>
       </article>
       <article class="case is-empty">
-        <div>
-          <h3>Second build, coming soon</h3>
-          <p>This slot is reserved for the next system. New builds get published here as they ship.</p>
-        </div>
-        <div class="status">Not started</div>
-      </article>
-      <article class="case is-empty">
-        <div>
-          <h3>Third build, coming soon</h3>
-          <p>Want your process documented publicly? That can be part of the engagement.</p>
-        </div>
-        <div class="status">Not started</div>
+        <div class="case-status">Not started</div>
+        <h3>Third build, coming soon</h3>
+        <p>Want your process documented publicly? That can be part of the engagement.</p>
       </article>
     </div>
   </section>
 
-  <section id="faq" class="wrap">
+  <section id="faq" class="wrap reveal">
     <div class="sec-head">
-      <h2>Questions people ask before booking</h2>
-      <p>Short answers. Longer ones on the call.</p>
+      <h2>Questions worth answering before you book</h2>
+      <p>Short answers here. We'll get into your specific workflow on the call.</p>
     </div>
-    <dl class="faq">
-      <dt>How much does it cost to automate lead routing for a small business?</dt>
-      <dd>A single lead routing workflow costs $3,500 as a fixed price and takes about a week. A connected system covering intake, routing, follow-up, and reporting costs $8,500 and takes about three weeks. Ongoing monitoring and changes run $1,200 a month.</dd>
-
-      <dt>How long does an automation build take?</dt>
-      <dd>One workflow takes about a week from the scoping call to handover. A multi-workflow system takes about three weeks. The main variable is how quickly I get credentials and answers from your side, so builds move fastest when one person owns the project internally.</dd>
-
-      <dt>What is n8n, and why self-hosted?</dt>
-      <dd>n8n is an open source workflow automation tool, similar in purpose to Zapier or Make. Self-hosting means the workflows run on a server you own, so pricing stays flat as your volume grows, your customer data stays in your infrastructure, and you keep everything if we stop working together. Hosting typically costs $10 to $40 a month.</dd>
-
-      <dt>What happens when an automation breaks?</dt>
-      <dd>Every workflow I build has a failure path. A step that fails is retried on a delay, and if it still fails, an alert goes to a channel you choose with the record attached so someone can finish it by hand. Silent failure is the single most common flaw in automations built by people who have never operated one.</dd>
-
-      <dt>Do I own the workflows you build?</dt>
-      <dd>Yes. The workflows, the code, the server, and the credentials are all yours. Everything is exported to a repository you control, and the handover includes a recorded walkthrough plus a written runbook so your team can maintain it.</dd>
-
-      <dt>Which CRMs and tools do you work with?</dt>
-      <dd>Anything with an API or a webhook, which covers HubSpot, Pipedrive, Salesforce, Airtable, Google Workspace, Slack, Stripe, and most industry-specific tools. Bring your list to the call and I will tell you on the spot which parts are straightforward and which will take real work.</dd>
-
-      <dt>Do you work with businesses outside Los Angeles?</dt>
-      <dd>Yes. The work is fully remote across the United States. Calls happen on video, and most clients I have talked to prefer it that way.</dd>
-    </dl>
+    <div class="faq">
+      <div class="faq-item">
+        <h3>What exactly do you build?</h3>
+        <p>I build the workflows behind lead intake, routing, follow-up, handoffs, notifications, and reporting. If your team is repeatedly moving information from one system to another or following the same set of steps by hand, it's probably worth looking at.</p>
+      </div>
+      <div class="faq-item">
+        <h3>How do I know if my process is worth automating?</h3>
+        <div class="faq-answer">
+          <p>If a process happens frequently, follows reasonably consistent rules, and takes people time to execute or monitor, it's a good candidate.</p>
+          <p>You don't need to know exactly what should be automated before the call. Bring me the process that wastes the most time, and I'll help you identify what makes sense to automate.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <h3>How much does it cost?</h3>
+        <div class="faq-answer">
+          <p>A single lead-routing workflow is $3,500 fixed price and typically takes about one week.</p>
+          <p>A connected system covering intake, routing, follow-up, and reporting is $8,500 and typically takes about three weeks.</p>
+          <p>Ongoing monitoring and changes are $1,200/month if you want me to stay involved after launch.</p>
+          <p>You'll know the price before any build work starts.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <h3>How much of my time will this take?</h3>
+        <div class="faq-answer">
+          <p>Usually, less than people expect. I'll need someone on your side who can explain the current process, provide access to the relevant tools, and answer questions when something is unclear.</p>
+          <p>The biggest projects move fastest when one person owns the project internally and can get me answers without waiting several days.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <h3>What if I don't use the same tools you do?</h3>
+        <div class="faq-answer">
+          <p>That's usually fine. I work with tools that expose an API or webhook, including HubSpot, Pipedrive, Salesforce, Airtable, Google Workspace, Slack, Stripe, and many industry-specific platforms.</p>
+          <p>Bring your current stack to the call. I'll tell you what's straightforward, what needs custom work, and what I wouldn't automate.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <h3>What happens if something breaks?</h3>
+        <div class="faq-answer">
+          <p>The system should tell you.</p>
+          <p>Workflows are built with retries and failure handling. If a step continues to fail, you'll receive an alert with enough information to understand what happened and finish the task manually if needed.</p>
+          <p>An automation that fails silently isn't automated. It's a liability.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <h3>Where does my data live?</h3>
+        <div class="faq-answer">
+          <p>The workflows run on infrastructure you own rather than inside a platform that I control. That means you control the server, credentials, workflows, and data moving through them.</p>
+          <p>We'll also scope access around the systems the workflow actually needs.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <h3>Am I locked into n8n or another platform?</h3>
+        <div class="faq-answer">
+          <p>No. I use n8n for many builds because it gives small businesses a flexible, self-hosted alternative to per-task automation platforms like Zapier and Make.</p>
+          <p>The important part is ownership. You own the infrastructure and the workflows, not me.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <h3>What do I actually get at the end?</h3>
+        <div class="faq-answer">
+          <p>A working automation, your workflows and code, your infrastructure and credentials, plus documentation explaining how the system works.</p>
+          <p>Handover includes a recorded walkthrough and written runbook so someone on your team can understand and operate it.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <h3>What happens after the build?</h3>
+        <div class="faq-answer">
+          <p>You can run it yourself, or I can stay involved through ongoing monitoring and changes for $1,200/month.</p>
+          <p>There is no requirement to stay on a retainer to keep your system running.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <h3>Do you work with businesses outside Los Angeles?</h3>
+        <p>Yes. Everything is remote and I work with small businesses across the United States.</p>
+      </div>
+    </div>
   </section>
 
-  <section id="book" class="wrap book">
-    <h2>Tell me what breaks, and how often.</h2>
-    <p>Twenty minutes on video. Bring the process that eats the most manual time each week. You leave with a rough scope and a real number, whether or not you hire me.</p>
+  <section id="book" class="wrap book reveal">
+    <h2>See what you could automate.</h2>
+    <p>Bring me the process that costs your business the most time. In 20 minutes, we'll walk through how it works today, where the friction is, and what I'd automate first.</p>
     <a class="btn" href="https://cal.com/prudie/20min">Book a 20-minute call</a>
     <p class="reassure">Prefer email? <a href="mailto:hello@prudie.dev">hello@prudie.dev</a></p>
   </section>
@@ -424,16 +651,52 @@
       "@type":"FAQPage",
       "@id":"https://prudie.dev/#faq",
       "mainEntity":[
-        {"@type":"Question","name":"How much does it cost to automate lead routing for a small business?","acceptedAnswer":{"@type":"Answer","text":"A single lead routing workflow costs $3,500 as a fixed price and takes about a week. A connected system covering intake, routing, follow-up, and reporting costs $8,500 and takes about three weeks. Ongoing monitoring and changes run $1,200 a month."}},
-        {"@type":"Question","name":"How long does an automation build take?","acceptedAnswer":{"@type":"Answer","text":"One workflow takes about a week from the scoping call to handover. A multi-workflow system takes about three weeks. The main variable is how quickly credentials and answers arrive from the client side."}},
-        {"@type":"Question","name":"What is n8n, and why self-hosted?","acceptedAnswer":{"@type":"Answer","text":"n8n is an open source workflow automation tool similar in purpose to Zapier or Make. Self-hosting means workflows run on a server you own, so pricing stays flat as volume grows, customer data stays in your infrastructure, and you keep everything if the engagement ends. Hosting typically costs $10 to $40 a month."}},
-        {"@type":"Question","name":"What happens when an automation breaks?","acceptedAnswer":{"@type":"Answer","text":"Every workflow has a failure path. A failed step is retried on a delay, and if it still fails, an alert goes to a channel you choose with the record attached so someone can finish it by hand."}},
-        {"@type":"Question","name":"Do I own the workflows you build?","acceptedAnswer":{"@type":"Answer","text":"Yes. The workflows, code, server, and credentials all belong to the client. Everything is exported to a repository the client controls, and handover includes a recorded walkthrough and a written runbook."}},
-        {"@type":"Question","name":"Which CRMs and tools do you work with?","acceptedAnswer":{"@type":"Answer","text":"Anything with an API or webhook, including HubSpot, Pipedrive, Salesforce, Airtable, Google Workspace, Slack, Stripe, and most industry-specific tools."}}
+        {"@type":"Question","name":"What exactly do you build?","acceptedAnswer":{"@type":"Answer","text":"I build the workflows behind lead intake, routing, follow-up, handoffs, notifications, and reporting. If your team is repeatedly moving information from one system to another or following the same set of steps by hand, it's probably worth looking at."}},
+        {"@type":"Question","name":"How do I know if my process is worth automating?","acceptedAnswer":{"@type":"Answer","text":"If a process happens frequently, follows reasonably consistent rules, and takes people time to execute or monitor, it's a good candidate. You don't need to know exactly what should be automated before the call. Bring me the process that wastes the most time, and I'll help you identify what makes sense to automate."}},
+        {"@type":"Question","name":"How much does it cost?","acceptedAnswer":{"@type":"Answer","text":"A single lead-routing workflow is $3,500 fixed price and typically takes about one week. A connected system covering intake, routing, follow-up, and reporting is $8,500 and typically takes about three weeks. Ongoing monitoring and changes are $1,200/month if you want me to stay involved after launch. You'll know the price before any build work starts."}},
+        {"@type":"Question","name":"How much of my time will this take?","acceptedAnswer":{"@type":"Answer","text":"Usually, less than people expect. I'll need someone on your side who can explain the current process, provide access to the relevant tools, and answer questions when something is unclear. The biggest projects move fastest when one person owns the project internally and can get me answers without waiting several days."}},
+        {"@type":"Question","name":"What if I don't use the same tools you do?","acceptedAnswer":{"@type":"Answer","text":"That's usually fine. I work with tools that expose an API or webhook, including HubSpot, Pipedrive, Salesforce, Airtable, Google Workspace, Slack, Stripe, and many industry-specific platforms. Bring your current stack to the call. I'll tell you what's straightforward, what needs custom work, and what I wouldn't automate."}},
+        {"@type":"Question","name":"What happens if something breaks?","acceptedAnswer":{"@type":"Answer","text":"The system should tell you. Workflows are built with retries and failure handling. If a step continues to fail, you'll receive an alert with enough information to understand what happened and finish the task manually if needed. An automation that fails silently isn't automated. It's a liability."}},
+        {"@type":"Question","name":"Where does my data live?","acceptedAnswer":{"@type":"Answer","text":"The workflows run on infrastructure you own rather than inside a platform that I control. That means you control the server, credentials, workflows, and data moving through them. We'll also scope access around the systems the workflow actually needs."}},
+        {"@type":"Question","name":"Am I locked into n8n or another platform?","acceptedAnswer":{"@type":"Answer","text":"No. I use n8n for many builds because it gives small businesses a flexible, self-hosted alternative to per-task automation platforms like Zapier and Make. The important part is ownership. You own the infrastructure and the workflows, not me."}},
+        {"@type":"Question","name":"What do I actually get at the end?","acceptedAnswer":{"@type":"Answer","text":"A working automation, your workflows and code, your infrastructure and credentials, plus documentation explaining how the system works. Handover includes a recorded walkthrough and written runbook so someone on your team can understand and operate it."}},
+        {"@type":"Question","name":"What happens after the build?","acceptedAnswer":{"@type":"Answer","text":"You can run it yourself, or I can stay involved through ongoing monitoring and changes for $1,200/month. There is no requirement to stay on a retainer to keep your system running."}},
+        {"@type":"Question","name":"Do you work with businesses outside Los Angeles?","acceptedAnswer":{"@type":"Answer","text":"Yes. Everything is remote and I work with small businesses across the United States."}}
       ]
     }
   ]
 }
+</script>
+
+<script>
+(function(){
+  document.documentElement.classList.add('js');
+
+  var header = document.querySelector('.site-header');
+  var progress = document.querySelector('.scroll-progress');
+  var onScroll = function(){
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    if(header){ header.classList.toggle('is-scrolled', h.scrollTop > 8); }
+    if(progress){ progress.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%'; }
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, {passive:true});
+
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, {threshold:0.12, rootMargin:'0px 0px -40px 0px'});
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('is-visible'); });
+  }
+})();
 </script>
 
 </body>
