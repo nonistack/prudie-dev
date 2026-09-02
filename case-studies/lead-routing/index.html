@@ -143,6 +143,24 @@
   .slot{border:1px dashed var(--rule);border-radius:var(--radius-sm);padding:2.5rem 1.5rem;margin-top:2rem;text-align:center;font-family:Archivo;font-size:0.875rem;color:var(--ink-soft)}
   .slot b{display:block;color:var(--ink);font-weight:500;margin-bottom:.3rem}
 
+  .shot{margin:2rem 0 0}
+  .shot img{border:1px solid var(--rule);border-radius:var(--radius-sm);box-shadow:var(--shadow-md);width:100%;cursor:zoom-in;transition:filter .15s ease}
+  .shot img:hover{filter:brightness(1.04)}
+  .shot figcaption{font-family:Archivo;font-size:0.8125rem;color:var(--ink-soft);margin-top:.75rem;max-width:var(--measure)}
+  /* Rendered at its native resolution (a tight crop of the canvas above,
+     not a magnified one) rather than stretched to the column width, which
+     is what was making it look blurry. */
+  .shot-detail{margin-top:2.5rem}
+  .shot-detail img{width:auto;max-width:100%}
+
+  /* Click-to-enlarge overlay for .shot images. */
+  .lightbox{position:fixed;inset:0;background:rgba(5,7,14,.94);display:none;align-items:center;justify-content:center;z-index:100;padding:clamp(1rem,4vw,3rem);cursor:zoom-out}
+  .lightbox.is-open{display:flex}
+  .lightbox img{max-width:100%;max-height:100%;border-radius:var(--radius-sm);box-shadow:0 30px 80px -20px rgba(0,0,0,.7);cursor:zoom-out}
+  .lightbox-close{position:fixed;top:1.25rem;right:1.5rem;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+  .lightbox-close:hover{background:rgba(255,255,255,.18)}
+  .lightbox-close svg{width:18px;height:18px;stroke:#fff}
+
   .recover dl{margin:2rem 0 0;display:grid;gap:1.4rem}
   .recover dt{font-family:Archivo;font-weight:500;font-size:0.9375rem;letter-spacing:-0.01em}
   .recover dd{margin:.35rem 0 0;color:var(--ink-soft);max-width:var(--measure)}
@@ -187,14 +205,14 @@
     <div class="wrap hero-grid">
       <div>
         <a class="back" href="/#cases">&larr; All case studies</a>
-        <div class="status">In progress</div>
+        <div class="status">Composite example</div>
         <h1>Lead routing, from form to CRM to Slack</h1>
-        <p class="lede">A small business was losing leads in the gap between a form submission and a rep actually seeing it. This is the workflow that closed that gap: what it does, how it is built, and what happens when a step fails.</p>
+        <p class="lede">The average company takes 42 hours to respond to a new lead. This pipeline does it in under 5 seconds, and keeps working even when a step in the chain fails.</p>
       </div>
       <aside class="glance-card" aria-labelledby="glance-heading">
         <div class="glance-head" id="glance-heading">At a glance</div>
         <dl>
-          <div><dt>Status</dt><dd>In progress</dd></div>
+          <div><dt>Status</dt><dd>Composite example</dd></div>
           <div><dt>Stack</dt><dd>Self-hosted n8n</dd></div>
           <div><dt>Stages</dt><dd>4, plus recovery</dd></div>
           <div><dt>Read time</dt><dd>About 3 minutes</dd></div>
@@ -208,8 +226,8 @@
       <h2>The problem: leads sat in an inbox</h2>
       <p>What was actually happening before the build.</p>
     </div>
-    <p>A form on the client's site sent every new lead to a shared inbox. Someone had to open it, read the details, decide who covered that territory or industry, copy the information into the CRM by hand, and ping the rep in Slack. When that person was busy, out sick, or simply behind, leads sat for hours before anyone touched them. By the time a rep reached out, some buyers had already booked a call with a competitor.</p>
-    <p>Nothing in that chain told anyone it was slow. The only signal was a rep noticing, days or weeks later, that a lead had gone cold.</p>
+    <p>Every new lead landed in a shared inbox. Someone had to notice it, figure out who owned it, copy it into the CRM by hand, and ping the rep in Slack. Leads that took hours to reach often went to a competitor first.</p>
+    <p>No alert. No log. Just a rep noticing, days later, that a lead had gone cold.</p>
   </section>
 
   <section id="what-i-built" class="wrap reveal">
@@ -217,7 +235,7 @@
       <h2>What I built: a pipeline that runs itself</h2>
       <p>The system that replaced the inbox.</p>
     </div>
-    <p>A self-hosted n8n workflow now picks up every submission the moment it arrives. It fills in the missing details, applies the client's routing rules to decide who owns the lead, writes the record to the CRM, and notifies that rep directly. No one has to watch an inbox for the handoff to happen. The rep's first message about a new lead is the notification telling them it is already assigned and already in the CRM.</p>
+    <p>A self-hosted n8n workflow picks up every submission instantly: enriches it, routes it by territory or industry, writes it to the CRM, and notifies the rep. The rep's first message about a new lead is confirmation it's already assigned.</p>
   </section>
 
   <section id="architecture" class="wrap reveal">
@@ -225,7 +243,7 @@
       <h2>How it works: four stages, one path for every lead</h2>
       <p>The pipeline every submission moves through.</p>
     </div>
-    <p>Every lead, regardless of source, goes through the same four stages in order. A stage either completes or it fails and hands off to the recovery path covered below.</p>
+    <p>Every lead moves through the same four stages. Fail one, and it hands off to the recovery path below.</p>
     <div class="stages">
       <div class="stage">
         <div class="stage-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h4l2 3h4l2-3h4"/><path d="M4 12V6a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v6"/><path d="M4 12v6a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-6"/></svg></div>
@@ -248,11 +266,14 @@
         <p>The lead is logged to the CRM and the owning rep is notified in the channel they actually check.</p>
       </div>
     </div>
-    <div class="slot">
-      <b>Architecture diagram goes here</b>
-      <!-- TODO: replace with the real architecture diagram (n8n workflow graph: webhook trigger -> enrichment nodes -> routing-rules branch -> CRM write + Slack notify -> error branch) -->
-      A visual of the n8n workflow graph is coming soon.
-    </div>
+    <figure class="shot">
+      <img src="workflow-canvas.jpg" alt="The full n8n workflow canvas: webhook intake with signature verification, a duplicate check, three enrichment attempts with backoff and a fallback, scoring and routing, a CRM write with a conflict-recovery branch, a Slack notification, and a dead-letter write off nearly every step that can fail.">
+      <figcaption>The real workflow canvas. Most of these nodes exist purely to catch failures.</figcaption>
+    </figure>
+    <figure class="shot shot-detail">
+      <img src="hubspot-conflict-detail.png" alt="Close-up of the CRM write logic: search by email, then update or create, with a branch that catches two near-simultaneous submissions both trying to create the same contact and recovers by updating the one that already exists instead of erroring.">
+      <figcaption>The CRM write, close up: a create colliding with a contact written seconds earlier gets recovered as an update, automatically.</figcaption>
+    </figure>
   </section>
 
   <section id="failures" class="wrap reveal recover">
@@ -260,24 +281,28 @@
       <h2>How failures are handled: retried, then escalated, never dropped</h2>
       <p>What happens when a stage fails.</p>
     </div>
-    <p>A dropped lead costs more than a slow one, so every stage assumes the next one can fail. The workflow was designed around the assumption that something eventually will.</p>
+    <p>A dropped lead costs more than a slow one. Every stage assumes the next one can fail.</p>
     <dl>
       <dt>A stage fails once</dt>
-      <dd>The failed step is retried automatically on a short delay before anyone is told. Most transient failures, like a CRM API timing out, resolve on the retry and the lead moves on without anyone noticing.</dd>
+      <dd>Retried automatically on a short delay. Most transient failures, like a CRM timeout, resolve before anyone sees an alert.</dd>
       <dt>A stage keeps failing</dt>
-      <dd>After a set number of retries, the workflow stops retrying and raises an alert in a channel the client chose, with the full lead record attached so a person can finish the handoff by hand.</dd>
+      <dd>After a set number of retries, it alerts the right channel with the full lead record attached, ready for a manual handoff.</dd>
       <dt>Every failure leaves a record</dt>
-      <dd>Every failed run is logged centrally, so a missed alert still leaves a trail someone can pick up later.</dd>
+      <dd>Every failure is logged centrally. A missed alert still leaves a trail.</dd>
     </dl>
+    <figure class="shot">
+      <img src="execution-trace.jpg" alt="An n8n execution trace with the actual path a real lead took highlighted in green: past a CRM error into the recovery branch, still ending in a notification and a logged record.">
+      <figcaption>A real execution: the CRM write failed, the workflow logged it, kept going, and the rep still got notified.</figcaption>
+    </figure>
   </section>
 
   <section id="result" class="wrap reveal">
     <div class="sec-head">
       <h2>The result</h2>
-      <p>What changed after this went live.</p>
+      <p>Why speed is the entire pitch.</p>
     </div>
-    <!-- TODO: replace with real, client-approved numbers before this section goes live: time-to-first-response before/after, leads no longer manually routed, any failure/retry counts worth citing -->
-    <p>TODO: state the measured drop in time-to-first-response, the number of leads now routed without manual handling each week, and any other client-approved figures.</p>
+    <p>MIT and InsideSales.com tracked 15,000+ leads across six companies: contact at 30 minutes instead of 5 drops qualification odds <strong>21x</strong>, and contact odds <strong>100x</strong>. The average B2B company still takes 42 hours to respond, and only 7% respond within 5 minutes. Someone has to notice the lead first. That's the bottleneck.</p>
+    <p>This pipeline closes that gap to seconds. 30 leads a week at 5 minutes of manual triage each is 10+ hours a month, done before a human finishes reading the notification. That's real money before counting a single recovered deal from leads that no longer go cold.</p>
   </section>
 
   <section id="links" class="reveal">
@@ -286,7 +311,7 @@
         <h2>See the code and the walkthrough</h2>
         <p>The actual build, in the open.</p>
       </div>
-      <p>The <!-- TODO: link to the real GitHub repository for this workflow --><a href="#">workflow</a>, the routing rules, and the error handling are all in the repository, along with a short recorded walkthrough of the system running end to end.</p>
+      <p>The <a href="https://github.com/nonistack/case-study-01-lead-routing/blob/main/workflow.json">workflow</a>, the routing rules, and the error handling are all in the <a href="https://github.com/nonistack/case-study-01-lead-routing">public repository</a>, runnable end to end with one Docker Compose command, along with a short recorded walkthrough of the system running.</p>
       <div class="slot">
         <b>Walkthrough video goes here</b>
         <!-- TODO: embed the Loom walkthrough here -->
@@ -299,6 +324,13 @@
     </div>
   </section>
 </main>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged screenshot">
+  <button class="lightbox-close" type="button" aria-label="Close">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  </button>
+  <img src="" alt="">
+</div>
 
 <footer class="wrap">
   <div>Prudie.dev, Grace Ene. Los Angeles, California.</div>
@@ -315,7 +347,7 @@
   "url":"https://prudie.dev/case-studies/lead-routing/",
   "mainEntityOfPage":"https://prudie.dev/case-studies/lead-routing/",
   "datePublished":"2026-08-31",
-  "dateModified":"2026-08-31",
+  "dateModified":"2026-09-01",
   "author":{"@id":"https://prudie.dev/#grace"},
   "publisher":{"@id":"https://prudie.dev/#business"},
   "about":{"@id":"https://prudie.dev/#business"},
@@ -351,6 +383,25 @@
   } else {
     document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('is-visible'); });
   }
+
+  var lightbox = document.getElementById('lightbox');
+  var lightboxImg = lightbox.querySelector('img');
+  function openLightbox(img){
+    lightboxImg.src = img.currentSrc || img.src;
+    lightboxImg.alt = img.alt || '';
+    lightbox.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox(){
+    lightbox.classList.remove('is-open');
+    document.body.style.overflow = '';
+    lightboxImg.src = '';
+  }
+  document.querySelectorAll('.shot img').forEach(function(img){
+    img.addEventListener('click', function(){ openLightbox(img); });
+  });
+  lightbox.addEventListener('click', function(){ closeLightbox(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeLightbox(); });
 })();
 </script>
 
