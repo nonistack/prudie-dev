@@ -3,7 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#F8F6F1">
+<meta name="theme-color" content="#0A0E1C">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <!-- TEMPORARY - relink when the case study has real numbers -->
 <meta name="robots" content="noindex, nofollow">
 
@@ -33,16 +37,24 @@
     --blue:#2B7FFE;
     --violet:#5867EF;
     --gradient:linear-gradient(135deg,#22A794 0%,#2B7FFE 50%,#5867EF 100%);
+    --gradient-cta:linear-gradient(135deg,#1B7970 0%,#215DBA 50%,#414CB0 100%);
+    --navy-deep:#0A0E1C;
+    --glow-teal:rgba(34,167,148,.35);
+    --glow-blue:rgba(43,127,254,.35);
+    --glow-violet:rgba(88,103,239,.35);
     --measure:62ch;
     --gutter:clamp(1.25rem,5vw,4.5rem);
+    --radius:14px;
+    --radius-sm:9px;
     --shadow-sm:0 1px 2px rgba(10,14,28,.08);
+    --shadow-md:0 18px 36px -20px rgba(10,14,28,.24);
     --ease:cubic-bezier(.22,.8,.32,1);
   }
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
   @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
   body{
-    margin:0;background:var(--paper);color:var(--ink);
+    margin:0;background:var(--paper);color:var(--ink);overflow-x:hidden;
     font-family:"Source Serif 4",Georgia,serif;
     font-size:clamp(1rem,0.96rem + 0.2vw,1.0625rem);line-height:1.65;
   }
@@ -53,34 +65,38 @@
   svg{display:block}
 
   .wrap{max-width:72rem;margin:0 auto;padding-inline:var(--gutter)}
+  .glow-blob{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
 
   .scroll-progress{position:fixed;top:0;left:0;height:2px;background:var(--gradient);width:0%;z-index:70}
 
-  .site-header{position:sticky;top:0;z-index:60;background:rgba(248,246,241,.86);backdrop-filter:blur(10px) saturate(1.15);-webkit-backdrop-filter:blur(10px) saturate(1.15);border-bottom:1px solid transparent;transition:border-color .25s var(--ease),box-shadow .25s var(--ease)}
-  .site-header.is-scrolled{border-bottom-color:var(--rule);box-shadow:var(--shadow-sm)}
+  .site-header{position:sticky;top:0;z-index:60;background:var(--navy-deep)}
+  .site-header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background-image:var(--gradient);opacity:0;transition:opacity .3s var(--ease)}
+  .site-header.is-scrolled{box-shadow:0 8px 24px -12px rgba(0,0,0,.5)}
+  .site-header.is-scrolled::after{opacity:1}
   .masthead{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;padding-block:1.5rem}
-  .mark{font-family:Archivo;font-weight:600;font-size:1.0625rem;letter-spacing:-0.02em;text-decoration:none}
-  .mark span{color:var(--ink)}
+  .mark{font-family:Archivo;font-weight:600;font-size:1.0625rem;letter-spacing:-0.02em;text-decoration:none;color:#fff}
+  .mark span{color:#fff}
   .masthead nav{font-family:Archivo;font-size:0.9375rem;display:flex;gap:1.5rem}
-  .masthead nav a{position:relative;color:var(--ink-soft);text-decoration:none;padding-bottom:3px}
+  .masthead nav a{position:relative;color:rgba(255,255,255,.72);text-decoration:none;padding-bottom:3px}
   .masthead nav a::after{content:"";position:absolute;left:0;right:100%;bottom:0;height:1px;background:var(--blue);transition:right .25s var(--ease)}
-  .masthead nav a:hover{color:var(--ink)}
+  .masthead nav a:hover{color:#fff}
   .masthead nav a:hover::after{right:0}
   @media (max-width:560px){.masthead nav a:nth-child(1){display:none}}
 
-  .hero{padding-block:clamp(2.5rem,7vw,4.5rem) clamp(2rem,5vw,3rem)}
-  .hero-grid{display:grid;grid-template-columns:1fr;gap:clamp(2rem,5vw,3.5rem);align-items:start}
+  .hero{position:relative;overflow:hidden;background:var(--navy-deep);padding-block:clamp(2.5rem,7vw,4.5rem) clamp(2rem,5vw,3rem)}
+  .hero .glow-blob{width:440px;height:440px;top:-140px;right:-100px;background:radial-gradient(circle,var(--glow-violet),transparent 70%);opacity:.6}
+  .hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:1fr;gap:clamp(2rem,5vw,3.5rem);align-items:start}
   @media (min-width:960px){.hero-grid{grid-template-columns:1.15fr .85fr}}
-  .back{font-family:Archivo;font-size:0.875rem;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);padding-bottom:2px}
-  .back:hover{color:var(--ink);border-color:var(--ink)}
-  .status{font-family:Archivo;font-size:0.75rem;font-weight:500;color:var(--ink-soft);white-space:nowrap;display:inline-flex;align-items:center;gap:.45rem;margin-top:1.5rem}
+  .back{font-family:Archivo;font-size:0.875rem;color:rgba(255,255,255,.75);text-decoration:none;border-bottom:1px solid rgba(255,255,255,.35);padding-bottom:2px}
+  .back:hover{color:#fff;border-color:#fff}
+  .status{font-family:Archivo;font-size:0.75rem;font-weight:500;color:rgba(255,255,255,.65);white-space:nowrap;display:inline-flex;align-items:center;gap:.45rem;margin-top:1.5rem}
   .status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--blue);flex:none}
   @media (prefers-reduced-motion:no-preference){.status::before{animation:pulse 2.2s ease-in-out infinite}}
   @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
-  h1{font-weight:600;font-size:clamp(1.9rem,1.2rem + 2.8vw,3.1rem);line-height:1.07;letter-spacing:-0.03em;margin:0.6rem 0 0;max-width:18ch}
-  .lede{max-width:var(--measure);margin:1.5rem 0 0;color:var(--ink-soft)}
+  h1{font-weight:600;font-size:clamp(1.9rem,1.2rem + 2.8vw,3.1rem);line-height:1.07;letter-spacing:-0.03em;margin:0.6rem 0 0;max-width:18ch;color:#fff}
+  .lede{max-width:var(--measure);margin:1.5rem 0 0;color:rgba(255,255,255,.72)}
 
-  .glance-card{background:var(--paper-lift);border:1px solid var(--rule);padding:1.5rem 1.6rem;margin-top:.5rem}
+  .glance-card{background:var(--paper-lift);border:1px solid var(--rule);border-radius:var(--radius);box-shadow:0 30px 70px -24px rgba(0,0,0,.6),0 0 50px -14px var(--glow-blue),0 0 0 1px rgba(255,255,255,.06);padding:1.5rem 1.6rem;margin-top:.5rem}
   .glance-head{font-family:Archivo;font-weight:600;font-size:.8125rem;color:var(--ink-soft);margin-bottom:1.1rem}
   .glance-card dl{margin:0;display:grid;gap:.9rem}
   .glance-card div{display:flex;justify-content:space-between;gap:1rem;border-top:1px solid var(--rule);padding-top:.9rem}
@@ -89,11 +105,11 @@
   .glance-card dd{font-family:Archivo;font-size:.875rem;font-weight:500;margin:0;text-align:right}
   @media (max-width:960px){.glance-card{max-width:22rem}}
 
-  .btn{font-family:Archivo;font-weight:500;font-size:0.9375rem;background:var(--ink);color:var(--paper);padding:0.8rem 1.4rem;border-radius:2px;text-decoration:none;display:inline-block;transition:background .15s ease,transform .15s ease,box-shadow .15s ease}
-  .btn:hover{filter:brightness(1.3);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+  .btn{font-family:Archivo;font-weight:500;font-size:0.9375rem;background-image:var(--gradient-cta);color:#fff;padding:0.8rem 1.4rem;border-radius:8px;text-decoration:none;display:inline-block;box-shadow:0 12px 30px -12px var(--glow-violet);transition:filter .15s ease,transform .15s ease,box-shadow .15s ease}
+  .btn:hover{filter:brightness(1.12);transform:translateY(-1px);box-shadow:0 16px 36px -12px var(--glow-blue)}
   .btn:active{transform:translateY(0)}
-  .btn-quiet{font-family:Archivo;font-size:0.9375rem;color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--rule);padding-bottom:2px;transition:color .15s ease,border-color .15s ease}
-  .btn-quiet:hover{color:var(--ink);border-color:var(--ink)}
+  .btn-quiet{font-family:Archivo;font-size:0.9375rem;color:rgba(255,255,255,.85);text-decoration:none;border-bottom:1px solid rgba(255,255,255,.4);padding-bottom:2px;transition:color .15s ease,border-color .15s ease}
+  .btn-quiet:hover{color:#fff;border-color:#fff}
 
   /* scroll reveal */
   .reveal{opacity:1;transform:none}
@@ -110,11 +126,10 @@
   section > p{max-width:var(--measure);margin:0 0 1rem}
   section > p:last-child{margin-bottom:0}
 
-  .stages{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--rule);background:var(--paper-lift);margin-top:2rem}
-  .stage{padding:1.4rem 1.3rem;border-left:1px solid var(--rule);transition:background .2s ease}
-  .stage:first-child{border-left:0}
-  .stage:hover{background:var(--paper)}
-  .stage-icon{width:30px;height:30px;border:1px solid var(--rule);background:var(--paper);display:flex;align-items:center;justify-content:center;margin-bottom:.9rem}
+  .stages{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:2rem}
+  .stage{background:var(--paper-lift);border:1px solid var(--rule);border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);padding:1.4rem 1.3rem;transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
+  .stage:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+  .stage-icon{width:30px;height:30px;border-radius:50%;background:var(--paper);display:flex;align-items:center;justify-content:center;margin-bottom:.9rem}
   .stage-icon svg{width:15px;height:15px;stroke:var(--teal)}
   .stage:nth-child(2) .stage-icon svg{stroke:var(--blue)}
   .stage:nth-child(3) .stage-icon svg{stroke:var(--violet)}
@@ -123,18 +138,27 @@
   .stage p{margin:.4rem 0 0;color:var(--ink-soft);font-size:0.875rem}
   @media (max-width:760px){
     .stages{grid-template-columns:1fr}
-    .stage{border-left:0;border-top:1px solid var(--rule)}
-    .stage:first-child{border-top:0}
   }
 
-  .slot{border:1px dashed var(--rule);padding:2.5rem 1.5rem;margin-top:2rem;text-align:center;font-family:Archivo;font-size:0.875rem;color:var(--ink-soft)}
+  .slot{border:1px dashed var(--rule);border-radius:var(--radius-sm);padding:2.5rem 1.5rem;margin-top:2rem;text-align:center;font-family:Archivo;font-size:0.875rem;color:var(--ink-soft)}
   .slot b{display:block;color:var(--ink);font-weight:500;margin-bottom:.3rem}
 
   .recover dl{margin:2rem 0 0;display:grid;gap:1.4rem}
   .recover dt{font-family:Archivo;font-weight:500;font-size:0.9375rem;letter-spacing:-0.01em}
   .recover dd{margin:.35rem 0 0;color:var(--ink-soft);max-width:var(--measure)}
 
-  .link-row{display:flex;flex-wrap:wrap;gap:1rem 1.75rem;align-items:center;margin-top:2rem}
+  .link-row{display:flex;flex-direction:column;align-items:center;gap:1rem;margin-top:2rem;text-align:center}
+
+  #links{position:relative;background:var(--navy-deep)}
+  #links .wrap > p{max-width:var(--measure);margin:0 0 1rem;color:rgba(255,255,255,.72)}
+  #links .wrap > p a{color:#fff}
+  #links .sec-head{border-top-color:rgba(255,255,255,.14)}
+  #links .sec-head h2{color:#fff}
+  #links .sec-head p{color:rgba(255,255,255,.6)}
+  #links .slot{border-color:rgba(255,255,255,.25);color:rgba(255,255,255,.6)}
+  #links .slot b{color:#fff}
+  .reassure{font-family:Archivo;font-size:0.8125rem;color:rgba(255,255,255,.55);margin:0}
+  .reassure a{color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.4)}
 
   footer{border-top:1px solid var(--rule);padding-block:2rem 3rem;font-family:Archivo;font-size:0.8125rem;color:var(--ink-soft);display:flex;flex-wrap:wrap;gap:.75rem 2rem;justify-content:space-between}
   footer a{color:var(--ink-soft)}
@@ -158,8 +182,9 @@
 </header>
 
 <main>
-  <div class="wrap hero">
-    <div class="hero-grid">
+  <div class="hero">
+    <div class="glow-blob" aria-hidden="true"></div>
+    <div class="wrap hero-grid">
       <div>
         <a class="back" href="/#cases">&larr; All case studies</a>
         <div class="status">In progress</div>
@@ -255,21 +280,22 @@
     <p>TODO: state the measured drop in time-to-first-response, the number of leads now routed without manual handling each week, and any other client-approved figures.</p>
   </section>
 
-  <section id="links" class="wrap reveal">
-    <div class="sec-head">
-      <h2>See the code and the walkthrough</h2>
-      <p>The actual build, in the open.</p>
-    </div>
-    <p>The workflow, the routing rules, and the error handling are all in the repository below, along with a short recorded walkthrough of the system running end to end.</p>
-    <div class="slot">
-      <b>Walkthrough video goes here</b>
-      <!-- TODO: embed the Loom walkthrough here -->
-      A recorded walkthrough is coming soon.
-    </div>
-    <div class="link-row">
-      <!-- TODO: link to the real GitHub repository for this workflow -->
-      <a class="btn-quiet" href="#">View the workflow on GitHub</a>
-      <a class="btn" href="https://cal.com/prudie/20min">Book a 20-minute call</a>
+  <section id="links" class="reveal">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>See the code and the walkthrough</h2>
+        <p>The actual build, in the open.</p>
+      </div>
+      <p>The <!-- TODO: link to the real GitHub repository for this workflow --><a href="#">workflow</a>, the routing rules, and the error handling are all in the repository, along with a short recorded walkthrough of the system running end to end.</p>
+      <div class="slot">
+        <b>Walkthrough video goes here</b>
+        <!-- TODO: embed the Loom walkthrough here -->
+        A recorded walkthrough is coming soon.
+      </div>
+      <div class="link-row">
+        <a class="btn" href="https://cal.com/prudie/20min">Book a 20-minute call</a>
+        <p class="reassure">Prefer email? <a href="mailto:hello@prudie.dev">hello@prudie.dev</a></p>
+      </div>
     </div>
   </section>
 </main>
