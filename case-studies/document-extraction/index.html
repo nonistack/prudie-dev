@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0A0E1C">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<!-- TEMPORARY - relink when this case study represents a paid client engagement -->
+<meta name="robots" content="noindex, nofollow">
+
+<title>Invoice extraction case study: OCR, a local LLM, and a human approval gate | Prudie.dev</title>
+<meta name="description" content="A self-hosted pipeline that reads invoices, drafts structured data with a local LLM, checks its own math, and scores its confidence, but never posts a single entry to accounting without a human approving it first.">
+<link rel="canonical" href="https://prudie.dev/case-studies/document-extraction/">
+
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://prudie.dev/case-studies/document-extraction/">
+<meta property="og:title" content="Invoice extraction with a human approval gate">
+<meta property="og:description" content="OCR and a local LLM draft the invoice data. Validation and confidence scoring flag what looks wrong. A human approves everything else before it reaches accounting.">
+<meta property="og:image" content="https://prudie.dev/grace@2x.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --paper:#F8F6F1;
+    --paper-lift:#FFFFFF;
+    --ink:#1B2A4A;
+    --ink-soft:#3E5266;
+    --rule:#E3E1DA;
+    --teal:#22A794;
+    --blue:#2B7FFE;
+    --violet:#5867EF;
+    --gradient:linear-gradient(135deg,#22A794 0%,#2B7FFE 50%,#5867EF 100%);
+    --gradient-cta:linear-gradient(135deg,#1B7970 0%,#215DBA 50%,#414CB0 100%);
+    --navy-deep:#0A0E1C;
+    --glow-teal:rgba(34,167,148,.35);
+    --glow-blue:rgba(43,127,254,.35);
+    --glow-violet:rgba(88,103,239,.35);
+    --measure:62ch;
+    --gutter:clamp(1.25rem,5vw,4.5rem);
+    --radius:14px;
+    --radius-sm:9px;
+    --shadow-sm:0 1px 2px rgba(10,14,28,.08);
+    --shadow-md:0 18px 36px -20px rgba(10,14,28,.24);
+    --ease:cubic-bezier(.22,.8,.32,1);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);overflow-x:hidden;
+    font-family:"Source Serif 4",Georgia,serif;
+    font-size:clamp(1rem,0.96rem + 0.2vw,1.0625rem);line-height:1.65;
+  }
+  h1,h2,h3,.ui{font-family:Archivo,system-ui,sans-serif}
+  a{color:inherit}
+  :focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+  img{max-width:100%;display:block}
+  svg{display:block}
+
+  .wrap{max-width:72rem;margin:0 auto;padding-inline:var(--gutter)}
+  .glow-blob{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+
+  .scroll-progress{position:fixed;top:0;left:0;height:2px;background:var(--gradient);width:0%;z-index:70}
+
+  .site-header{position:sticky;top:0;z-index:60;background:var(--navy-deep)}
+  .site-header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background-image:var(--gradient);opacity:0;transition:opacity .3s var(--ease)}
+  .site-header.is-scrolled{box-shadow:0 8px 24px -12px rgba(0,0,0,.5)}
+  .site-header.is-scrolled::after{opacity:1}
+  .masthead{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;padding-block:1.5rem}
+  .mark{font-family:Archivo;font-weight:600;font-size:1.0625rem;letter-spacing:-0.02em;text-decoration:none;color:#fff}
+  .mark span{color:#fff}
+  .masthead nav{font-family:Archivo;font-size:0.9375rem;display:flex;gap:1.5rem}
+  .masthead nav a{position:relative;color:rgba(255,255,255,.72);text-decoration:none;padding-bottom:3px}
+  .masthead nav a::after{content:"";position:absolute;left:0;right:100%;bottom:0;height:1px;background:var(--blue);transition:right .25s var(--ease)}
+  .masthead nav a:hover{color:#fff}
+  .masthead nav a:hover::after{right:0}
+  @media (max-width:560px){.masthead nav a:nth-child(1){display:none}}
+
+  .hero{position:relative;overflow:hidden;background:var(--navy-deep);padding-block:clamp(2.5rem,7vw,4.5rem) clamp(2rem,5vw,3rem)}
+  .hero .glow-blob{width:440px;height:440px;top:-140px;right:-100px;background:radial-gradient(circle,var(--glow-teal),transparent 70%);opacity:.6}
+  .hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:1fr;gap:clamp(2rem,5vw,3.5rem);align-items:start}
+  @media (min-width:960px){.hero-grid{grid-template-columns:1.15fr .85fr}}
+  .back{font-family:Archivo;font-size:0.875rem;color:rgba(255,255,255,.75);text-decoration:none;border-bottom:1px solid rgba(255,255,255,.35);padding-bottom:2px}
+  .back:hover{color:#fff;border-color:#fff}
+  .status{font-family:Archivo;font-size:0.75rem;font-weight:500;color:rgba(255,255,255,.65);white-space:nowrap;display:inline-flex;align-items:center;gap:.45rem;margin-top:1.5rem}
+  .status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--teal);flex:none}
+  @media (prefers-reduced-motion:no-preference){.status::before{animation:pulse 2.2s ease-in-out infinite}}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
+  h1{font-weight:600;font-size:clamp(1.9rem,1.2rem + 2.8vw,3.1rem);line-height:1.07;letter-spacing:-0.03em;margin:0.6rem 0 0;max-width:19ch;color:#fff}
+  .lede{max-width:var(--measure);margin:1.5rem 0 0;color:rgba(255,255,255,.72)}
+
+  .glance-card{background:var(--paper-lift);border:1px solid var(--rule);border-radius:var(--radius);box-shadow:0 30px 70px -24px rgba(0,0,0,.6),0 0 50px -14px var(--glow-teal),0 0 0 1px rgba(255,255,255,.06);padding:1.5rem 1.6rem;margin-top:.5rem}
+  .glance-head{font-family:Archivo;font-weight:600;font-size:.8125rem;color:var(--ink-soft);margin-bottom:1.1rem}
+  .glance-card dl{margin:0;display:grid;gap:.9rem}
+  .glance-card div{display:flex;justify-content:space-between;gap:1rem;border-top:1px solid var(--rule);padding-top:.9rem}
+  .glance-card div:first-child{border-top:0;padding-top:0}
+  .glance-card dt{font-family:Archivo;font-size:.875rem;color:var(--ink-soft);margin:0}
+  .glance-card dd{font-family:Archivo;font-size:.875rem;font-weight:500;margin:0;text-align:right}
+  @media (max-width:960px){.glance-card{max-width:22rem}}
+
+  .btn{font-family:Archivo;font-weight:500;font-size:0.9375rem;background-image:var(--gradient-cta);color:#fff;padding:0.8rem 1.4rem;border-radius:8px;text-decoration:none;display:inline-block;box-shadow:0 12px 30px -12px var(--glow-violet);transition:filter .15s ease,transform .15s ease,box-shadow .15s ease}
+  .btn:hover{filter:brightness(1.12);transform:translateY(-1px);box-shadow:0 16px 36px -12px var(--glow-blue)}
+  .btn:active{transform:translateY(0)}
+  .btn-quiet{font-family:Archivo;font-size:0.9375rem;color:rgba(255,255,255,.85);text-decoration:none;border-bottom:1px solid rgba(255,255,255,.4);padding-bottom:2px;transition:color .15s ease,border-color .15s ease}
+  .btn-quiet:hover{color:#fff;border-color:#fff}
+
+  /* scroll reveal */
+  .reveal{opacity:1;transform:none}
+  @media (prefers-reduced-motion:no-preference){
+    html.js .reveal{opacity:0;transform:translateY(16px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+    html.js .reveal.is-visible{opacity:1;transform:none}
+  }
+
+  section{padding-block:clamp(3rem,7vw,5rem)}
+  .sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:2rem;border-top:1px solid var(--rule);padding-top:1.1rem;margin-bottom:2rem}
+  h2{font-weight:600;font-size:clamp(1.35rem,1.1rem + .7vw,1.75rem);letter-spacing:-0.025em;margin:0;max-width:26ch}
+  .sec-head p{margin:0;color:var(--ink-soft);font-size:0.9375rem;max-width:32ch;text-align:right}
+  @media (max-width:640px){.sec-head{flex-direction:column;gap:.6rem}.sec-head p{text-align:left}}
+  section > p{max-width:var(--measure);margin:0 0 1rem}
+  section > p:last-child{margin-bottom:0}
+
+  .stages{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:2rem}
+  .stage{background:var(--paper-lift);border:1px solid var(--rule);border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);padding:1.4rem 1.3rem;transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
+  .stage:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+  .stage-icon{width:30px;height:30px;border-radius:50%;background:var(--paper);display:flex;align-items:center;justify-content:center;margin-bottom:.9rem}
+  .stage-icon svg{width:15px;height:15px;stroke:var(--teal)}
+  .stage:nth-child(2) .stage-icon svg{stroke:var(--blue)}
+  .stage:nth-child(3) .stage-icon svg{stroke:var(--violet)}
+  .stage:nth-child(4) .stage-icon svg{stroke:var(--teal)}
+  .stage b{display:block;font-family:Archivo;font-weight:600;font-size:0.9375rem;letter-spacing:-0.015em}
+  .stage p{margin:.4rem 0 0;color:var(--ink-soft);font-size:0.875rem}
+  @media (max-width:760px){
+    .stages{grid-template-columns:1fr}
+  }
+
+  .slot{border:1px dashed var(--rule);border-radius:var(--radius-sm);padding:2.5rem 1.5rem;margin-top:2rem;text-align:center;font-family:Archivo;font-size:0.875rem;color:var(--ink-soft)}
+  .slot b{display:block;color:var(--ink);font-weight:500;margin-bottom:.3rem}
+
+  .shot{margin:2rem 0 0}
+  .shot img{border:1px solid var(--rule);border-radius:var(--radius-sm);box-shadow:var(--shadow-md);width:100%;cursor:zoom-in;transition:filter .15s ease}
+  .shot img:hover{filter:brightness(1.04)}
+  .shot figcaption{font-family:Archivo;font-size:0.8125rem;color:var(--ink-soft);margin-top:.75rem;max-width:var(--measure)}
+  .shot-detail{margin-top:2.5rem}
+  .shot-detail img{width:auto;max-width:100%}
+
+  .lightbox{position:fixed;inset:0;background:rgba(5,7,14,.94);display:none;align-items:center;justify-content:center;z-index:100;padding:clamp(1rem,4vw,3rem);cursor:zoom-out}
+  .lightbox.is-open{display:flex}
+  .lightbox img{max-width:100%;max-height:100%;border-radius:var(--radius-sm);box-shadow:0 30px 80px -20px rgba(0,0,0,.7);cursor:zoom-out}
+  .lightbox-close{position:fixed;top:1.25rem;right:1.5rem;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+  .lightbox-close:hover{background:rgba(255,255,255,.18)}
+  .lightbox-close svg{width:18px;height:18px;stroke:#fff}
+
+  .recover dl{margin:2rem 0 0;display:grid;gap:1.4rem}
+  .recover dt{font-family:Archivo;font-weight:500;font-size:0.9375rem;letter-spacing:-0.01em}
+  .recover dd{margin:.35rem 0 0;color:var(--ink-soft);max-width:var(--measure)}
+
+  .link-row{display:flex;flex-direction:column;align-items:center;gap:1rem;margin-top:2rem;text-align:center}
+
+  #links{position:relative;background:var(--navy-deep)}
+  #links .wrap > p{max-width:var(--measure);margin:0 0 1rem;color:rgba(255,255,255,.72)}
+  #links .wrap > p a{color:#fff}
+  #links .sec-head{border-top-color:rgba(255,255,255,.14)}
+  #links .sec-head h2{color:#fff}
+  #links .sec-head p{color:rgba(255,255,255,.6)}
+  #links .slot{border-color:rgba(255,255,255,.25);color:rgba(255,255,255,.6)}
+  #links .slot b{color:#fff}
+  .reassure{font-family:Archivo;font-size:0.8125rem;color:rgba(255,255,255,.55);margin:0}
+  .reassure a{color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.4)}
+
+  footer{border-top:1px solid var(--rule);padding-block:2rem 3rem;font-family:Archivo;font-size:0.8125rem;color:var(--ink-soft);display:flex;flex-wrap:wrap;gap:.75rem 2rem;justify-content:space-between}
+  footer a{color:var(--ink-soft)}
+</style>
+</head>
+<body>
+
+<div class="scroll-progress" aria-hidden="true"></div>
+
+<header class="site-header">
+  <div class="wrap masthead">
+    <a class="mark" href="/">prudie<span>.dev</span></a>
+    <nav>
+      <a href="/#offers">Pricing</a>
+      <a href="/#cases">Case studies</a>
+      <a href="/#about">About</a>
+      <a href="/#faq">FAQ</a>
+      <a href="/#book">Book a call</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="glow-blob" aria-hidden="true"></div>
+    <div class="wrap hero-grid">
+      <div>
+        <a class="back" href="/#cases">&larr; All case studies</a>
+        <div class="status">Composite example</div>
+        <h1>Invoice extraction, with a human approval gate</h1>
+        <p class="lede">Ardent Partners puts the average cost to process one invoice by hand at $9.40. This pipeline drafts every field automatically, checks its own math, and refuses to post a single entry to accounting until a person signs off on it.</p>
+      </div>
+      <aside class="glance-card" aria-labelledby="glance-heading">
+        <div class="glance-head" id="glance-heading">At a glance</div>
+        <dl>
+          <div><dt>Status</dt><dd>Composite example</dd></div>
+          <div><dt>Stack</dt><dd>Self-hosted n8n + Ollama</dd></div>
+          <div><dt>Stages</dt><dd>4, plus a hard gate</dd></div>
+          <div><dt>Read time</dt><dd>About 3 minutes</dd></div>
+        </dl>
+      </aside>
+    </div>
+  </div>
+
+  <section id="problem" class="wrap reveal">
+    <div class="sec-head">
+      <h2>The problem: AI extraction is where compliance says no</h2>
+      <p>What actually blocks this project.</p>
+    </div>
+    <p>Someone on the back-office team re-types every invoice by hand: vendor, invoice number, line items, tax, total. It's slow, and every manual entry is a chance to fat-finger a number.</p>
+    <p>The obvious fix runs into a wall the moment it reaches finance or compliance. An AI extraction tool means two separate problems stacked on top of each other: sending vendor and payment data to a third-party API, and letting a model write directly to the ledger with no one checking its work. Most teams that hear "AI" and "accounting system" in the same sentence say no before the demo finishes.</p>
+  </section>
+
+  <section id="what-i-built" class="wrap reveal">
+    <div class="sec-head">
+      <h2>What I built: a pipeline that drafts, never posts</h2>
+      <p>The system that replaced manual entry.</p>
+    </div>
+    <p>A self-hosted OCR and LLM pipeline reads each invoice, extracts the same fields a person would, checks its own math against six validation rules, and scores its confidence per field. Every result lands in a review queue, never in the accounting system directly. A person looks at the source page next to the extracted values, corrects anything wrong, and only then does an entry go through. Nothing else in the system can make that call, by design.</p>
+  </section>
+
+  <section id="architecture" class="wrap reveal">
+    <div class="sec-head">
+      <h2>How it works: four stages before anything is posted</h2>
+      <p>The pipeline every invoice moves through.</p>
+    </div>
+    <p>Every invoice moves through the same four stages. Only a human decision moves it past the fourth.</p>
+    <div class="stages">
+      <div class="stage">
+        <div class="stage-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 15-4-4-9 9"/></svg></div>
+        <b>Read</b>
+        <p>Text-layer PDFs are read directly. Scanned pages go through Tesseract, which returns a real confidence score instead of assuming perfect accuracy.</p>
+      </div>
+      <div class="stage">
+        <div class="stage-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H6a2 2 0 0 0-2 2v2M16 3h2a2 2 0 0 1 2 2v2M8 21H6a2 2 0 0 1-2-2v-2M16 21h2a2 2 0 0 0 2-2v-2"/></svg></div>
+        <b>Extract</b>
+        <p>A local LLM, running on Ollama, nothing leaves the network, returns strict JSON: vendor, invoice number, line items, subtotal, tax, total.</p>
+      </div>
+      <div class="stage">
+        <div class="stage-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+        <b>Validate &amp; score</b>
+        <p>Six rules check the math, the date, and duplicates. Each field gets a confidence score blending OCR quality, source grounding, and which rules it passed.</p>
+      </div>
+      <div class="stage">
+        <div class="stage-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/></svg></div>
+        <b>Approve</b>
+        <p>High-confidence, validated items queue for a one-click approval. Everything else waits in an exception queue until a person clears it.</p>
+      </div>
+    </div>
+    <figure class="shot">
+      <img src="workflow-canvas.jpg" alt="The full n8n workflow canvas: webhook intake, OCR, local LLM extraction with a repair-prompt retry, duplicate check, six validation rules, confidence scoring, routing to a pending-approval or exception queue, and a second, separate flow triggered only by an explicit human approval that posts to the accounting API.">
+      <figcaption>The real workflow canvas. Two separate flows: intake and scoring on top, and a posting flow on the bottom that only a human approval can trigger.</figcaption>
+    </figure>
+    <figure class="shot shot-detail">
+      <img src="duplicate-detail.jpg" alt="The review UI showing an extracted invoice with per-field confidence badges. Every field reads 100% except invoice number, which reads 50%, flagged because the system detected the same vendor and invoice number already on file.">
+      <figcaption>A real extraction: every field is clean except invoice number, dropped to 50% the moment the duplicate check caught it.</figcaption>
+    </figure>
+  </section>
+
+  <section id="failures" class="wrap reveal recover">
+    <div class="sec-head">
+      <h2>How failures are handled: caught, scored, never guessed past</h2>
+      <p>What happens when something is wrong.</p>
+    </div>
+    <p>The model is allowed to be wrong. It is never allowed to be wrong silently.</p>
+    <dl>
+      <dt>Broken or hallucinated JSON</dt>
+      <dd>If the model returns malformed JSON, or a field that doesn't match anything in the source text, the workflow retries once with a repair prompt, then routes to the exception queue instead of guessing.</dd>
+      <dt>Math that doesn't add up</dt>
+      <dd>Line items are checked against the subtotal, and subtotal plus tax against the total, to the cent. A mismatch routes straight to the exception queue.</dd>
+      <dt>Duplicate invoices</dt>
+      <dd>Same vendor, same invoice number, already on file: blocked automatically, regardless of how confident the model was about everything else.</dd>
+      <dt>Technically valid, still uncertain</dt>
+      <dd>A document that passes every rule but scores below the confidence threshold still goes to the exception queue instead of the fast lane.</dd>
+    </dl>
+    <figure class="shot">
+      <img src="review-queue.jpg" alt="The review queue showing four invoices pending approval at 100% confidence, and two flagged in the exception queue: one tagged validation_failed for an arithmetic mismatch, one tagged duplicate for a repeated invoice number.">
+      <figcaption>A real queue: four clean invoices waiting on a one-click approval, two others held back with the exact reason attached.</figcaption>
+    </figure>
+    <figure class="shot shot-detail">
+      <img src="validation-detail.jpg" alt="A validation results panel showing five rules passed (line items sum to subtotal, subtotal plus tax equals total, date plausible, currency valid, required fields present) and one failed (invoice number not duplicate).">
+      <figcaption>Every rule that ran on that invoice, not just the one that failed. The reviewer sees the full picture, not a single red flag.</figcaption>
+    </figure>
+  </section>
+
+  <section id="result" class="wrap reveal">
+    <div class="sec-head">
+      <h2>The result</h2>
+      <p>Why the gate is the whole pitch.</p>
+    </div>
+    <p>Ardent Partners puts the average cost to process an invoice by hand at $9.40; best-in-class AP teams, almost entirely through automation, do it for $2.78. The extraction part of that gap isn't hard, most tools can read a PDF. The part that actually stops teams from automating is trust: a system finance will turn on has to prove it can't post something wrong without a person seeing it first.</p>
+    <p>That's what this pipeline is built to prove. The extraction logic, the six validation rules, and the approval gate all sit in code you can read end to end, including the one place in the entire system where a write to accounting is even possible, and the fact that a human decision is the only thing that reaches it.</p>
+  </section>
+
+  <section id="links" class="reveal">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>See the code and the walkthrough</h2>
+        <p>The actual build, in the open.</p>
+      </div>
+      <p>The <a href="https://github.com/nonistack/case-study-02-document-extraction/blob/main/workflow.json">workflow</a>, the validation rules, and the review UI are all in the <a href="https://github.com/nonistack/case-study-02-document-extraction">public repository</a>, runnable end to end with one Docker Compose command, along with a script that generates 20 synthetic test invoices covering the failure cases above.</p>
+      <div class="slot">
+        <b>Walkthrough video goes here</b>
+        <!-- TODO: embed the Loom walkthrough here -->
+        A recorded walkthrough is coming soon.
+      </div>
+      <div class="link-row">
+        <a class="btn" href="https://cal.com/prudie/20min">Book a 20-minute call</a>
+        <p class="reassure">Prefer email? <a href="mailto:hello@prudie.dev">hello@prudie.dev</a></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged screenshot">
+  <button class="lightbox-close" type="button" aria-label="Close">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  </button>
+  <img src="" alt="">
+</div>
+
+<footer class="wrap">
+  <div>Prudie.dev, Grace Ene. Los Angeles, California.</div>
+  <div><a href="mailto:hello@prudie.dev">hello@prudie.dev</a></div>
+</footer>
+
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"TechArticle",
+  "@id":"https://prudie.dev/case-studies/document-extraction/#article",
+  "headline":"Invoice extraction, with a human approval gate",
+  "description":"A self-hosted pipeline that reads invoices, drafts structured data with a local LLM, checks its own math, and scores its confidence, but never posts a single entry to accounting without a human approving it first.",
+  "url":"https://prudie.dev/case-studies/document-extraction/",
+  "mainEntityOfPage":"https://prudie.dev/case-studies/document-extraction/",
+  "datePublished":"2026-09-02",
+  "dateModified":"2026-09-02",
+  "author":{"@id":"https://prudie.dev/#grace"},
+  "publisher":{"@id":"https://prudie.dev/#business"},
+  "about":{"@id":"https://prudie.dev/#business"},
+  "image":"https://prudie.dev/grace@2x.jpg"
+}
+</script>
+
+<script>
+(function(){
+  document.documentElement.classList.add('js');
+
+  var header = document.querySelector('.site-header');
+  var progress = document.querySelector('.scroll-progress');
+  var onScroll = function(){
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    if(header){ header.classList.toggle('is-scrolled', h.scrollTop > 8); }
+    if(progress){ progress.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%'; }
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, {passive:true});
+
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, {threshold:0.12, rootMargin:'0px 0px -40px 0px'});
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('is-visible'); });
+  }
+
+  var lightbox = document.getElementById('lightbox');
+  var lightboxImg = lightbox.querySelector('img');
+  function openLightbox(img){
+    lightboxImg.src = img.currentSrc || img.src;
+    lightboxImg.alt = img.alt || '';
+    lightbox.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox(){
+    lightbox.classList.remove('is-open');
+    document.body.style.overflow = '';
+    lightboxImg.src = '';
+  }
+  document.querySelectorAll('.shot img').forEach(function(img){
+    img.addEventListener('click', function(){ openLightbox(img); });
+  });
+  lightbox.addEventListener('click', function(){ closeLightbox(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeLightbox(); });
+})();
+</script>
+
+</body>
+</html>
