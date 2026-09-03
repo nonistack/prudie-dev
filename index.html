@@ -95,12 +95,20 @@
   @media (min-width:960px){.hero-grid{grid-template-columns:1.12fr .88fr}}
   h1{font-weight:600;font-size:clamp(2.1rem,1.2rem + 3.6vw,4.05rem);line-height:1.03;letter-spacing:-0.035em;margin:0;max-width:16ch;color:#fff}
   .lede{max-width:var(--measure);margin:1.5rem 0 0;color:rgba(255,255,255,.72)}
+  .lede a{color:#fff;border-bottom:1px solid rgba(255,255,255,.4);text-decoration:none}
+  .lede a:hover{border-color:#fff}
   .hero-actions{display:flex;flex-wrap:wrap;gap:1rem 1.75rem;align-items:center;margin-top:2.25rem}
   .hero-actions .btn{background-image:var(--gradient-cta);color:#fff;box-shadow:0 12px 30px -12px var(--glow-violet)}
   .hero-actions .btn:hover{filter:brightness(1.12);box-shadow:0 16px 36px -12px var(--glow-blue)}
   .hero-actions .btn-quiet{color:rgba(255,255,255,.85);border-bottom-color:rgba(255,255,255,.4)}
   .hero-actions .btn-quiet:hover{color:#fff;border-color:#fff}
   .reassure{font-family:Archivo;font-size:0.8125rem;color:rgba(255,255,255,.55);margin-top:1rem}
+  .hero-proof{list-style:none;display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;margin:1.1rem 0 0;padding:0}
+  .hero-proof a{font-family:Archivo;font-weight:600;font-size:.8125rem;color:#fff;text-decoration:none;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:.4rem .85rem;display:inline-flex;align-items:center;gap:.35rem;transition:background .15s ease,border-color .15s ease}
+  .hero-proof a:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.32)}
+  .hero-proof a b{font-weight:700;background-image:var(--gradient);background-clip:text;-webkit-background-clip:text;color:transparent}
+  .hero-proof-note{width:100%;font-family:Archivo;font-size:.75rem;color:rgba(255,255,255,.5)}
+  @media (max-width:560px){.hero-proof-note{width:auto}}
 
   .btn{font-family:Archivo;font-weight:500;font-size:0.9375rem;background:var(--ink);color:var(--paper);padding:0.8rem 1.4rem;border-radius:8px;text-decoration:none;display:inline-block;transition:filter .15s ease,transform .15s ease,box-shadow .15s ease}
   .btn:hover{filter:brightness(1.3);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
@@ -387,12 +395,17 @@
     <div class="wrap hero-grid">
       <div class="hero-copy">
         <h1>Stop losing leads to broken handoffs.</h1>
-        <p class="lede">A 30-minute delay cuts your odds of closing a lead by 21x. This routes every lead in under 5 seconds, automatically.</p>
+        <p class="lede">A 30-minute response delay cuts your odds of qualifying a lead by 21x, according to a <a href="/case-studies/lead-routing/#result">2007 study of 15,000+ leads</a>. This routes every lead in under 5 seconds, automatically.</p>
         <div class="hero-actions">
           <a class="btn" href="#book">Book a 20-minute call</a>
           <a class="btn-quiet" href="#offers">See pricing</a>
         </div>
         <p class="reassure">Fixed price agreed before work starts. You own the code, workflows, and infrastructure.</p>
+        <ul class="hero-proof" aria-label="Measured results from a live case study">
+          <li><a href="/case-studies/knowledge-retrieval/"><b>92%</b> retrieval hit rate</a></li>
+          <li><a href="/case-studies/knowledge-retrieval/"><b>100%</b> refusal on out-of-corpus questions</a></li>
+          <li class="hero-proof-note">Measured on a 50-question eval harness run against the live stack.</li>
+        </ul>
       </div>
 
       <aside class="pipeline-card" aria-labelledby="pipeline-heading">
@@ -460,7 +473,7 @@
   <section id="problems" class="wrap reveal">
     <div class="sec-head">
       <h2>The work nobody should be doing manually</h2>
-      <p>Most small businesses don't have a people problem. They have a process problem.</p>
+      <p>Most Series A-B and mid-market teams don't have a people problem. They have a process problem.</p>
     </div>
     <div class="pain">
       <div>
@@ -592,7 +605,7 @@
         <p>I'm Grace Ene. Before Prudie.dev, I spent 8 years in customer success and revenue operations at B2B software companies. I know what it looks like when a lead gets stuck between systems, a handoff depends on someone's memory, or a team spends Friday afternoon fixing a spreadsheet that should have updated itself.</p>
         <p>I started building because I wanted to solve those problems at the system level. I also built and shipped <a href="https://investwithprudie.com">Invest with Prudie</a>, a production financial education platform with payments, authentication, automated email, and its own infrastructure.</p>
         <p>That combination matters. I understand the business problem behind the workflow, and I can build the technical solution myself. You work directly with me from scoping through build, testing, and handover.</p>
-        <p>I work remotely with US small businesses from Los Angeles. There is no account manager or sales-to-engineering handoff. You get the person doing the work.</p>
+        <p>I work remotely with Series A-B and mid-market teams from Los Angeles, including outside the United States. There is no account manager or sales-to-engineering handoff. You get the person doing the work.</p>
         <p>And you don't have to depend on me forever. You own the server, code, workflows, credentials, and documentation. If we stop working together, your system keeps running.</p>
         <a class="btn" href="#book">Book a 20-minute call</a>
       </div>
@@ -808,7 +821,7 @@
         </button></h3>
         <div class="faq-a-wrap" id="faq-a-8">
           <div class="faq-a-inner">
-            <p>No. I use n8n for many builds because it gives small businesses a flexible, self-hosted alternative to per-task automation platforms like Zapier and Make.</p>
+            <p>No. I use n8n for many builds because it gives growing teams a flexible, self-hosted alternative to per-task automation platforms like Zapier and Make.</p>
             <p>The important part is ownership. You own the infrastructure and the workflows.</p>
           </div>
         </div>
@@ -839,12 +852,12 @@
       </div>
       <div class="faq-item" id="faq-11">
         <h3><button class="faq-q" type="button" aria-expanded="false" aria-controls="faq-a-11">
-          <span>Do you work with businesses outside Los Angeles?</span>
+          <span>Do you work with companies outside Los Angeles?</span>
           <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
         </button></h3>
         <div class="faq-a-wrap" id="faq-a-11">
           <div class="faq-a-inner">
-            <p>Yes. Everything is remote and I work with small businesses across the United States.</p>
+            <p>Yes. Everything is remote, so location isn't a factor. I take on Series A-B and mid-market companies in the United States and Europe.</p>
           </div>
         </div>
       </div>
@@ -857,14 +870,14 @@
       <h2>See what you could automate.</h2>
       <p>Bring me the process that costs your business the most time. In 20 minutes, we'll walk through how it works today, where the friction is, and what I'd automate first.</p>
       <a class="btn btn-invert" href="https://cal.com/prudie/20min">Book a 20-minute call</a>
-      <p class="reassure">Prefer email? <a href="mailto:hello@prudie.dev">hello@prudie.dev</a></p>
+      <p class="reassure">Prefer email? <a class="email-link" data-email-user="hello" data-email-host="prudie.dev" href="#">hello (at) prudie.dev</a></p>
     </div>
   </section>
 </main>
 
 <footer class="wrap">
   <div>Prudie.dev, Grace Ene. Los Angeles, California.</div>
-  <div><a href="mailto:hello@prudie.dev">hello@prudie.dev</a></div>
+  <div><a class="email-link" data-email-user="hello" data-email-host="prudie.dev" href="#">hello (at) prudie.dev</a></div>
 </footer>
 
 <script type="application/ld+json">
@@ -878,9 +891,9 @@
       "url":"https://prudie.dev/",
       "email":"hello@prudie.dev",
       "image":"https://prudie.dev/grace@2x.jpg",
-      "description":"Workflow automation and lead routing implementation for small businesses, built on self-hosted n8n.",
+      "description":"Workflow automation and lead routing implementation for Series A-B and mid-market companies, built on self-hosted n8n.",
       "founder":{"@id":"https://prudie.dev/#grace"},
-      "areaServed":{"@type":"Country","name":"United States"},
+      "areaServed":[{"@type":"Country","name":"United States"},{"@type":"Place","name":"Europe"}],
       "address":{"@type":"PostalAddress","addressLocality":"Los Angeles","addressRegion":"CA","addressCountry":"US"},
       "priceRange":"$1,200 - $8,500",
       "hasOfferCatalog":{
@@ -913,10 +926,10 @@
         {"@type":"Question","name":"What if I don't use the same tools you do?","acceptedAnswer":{"@type":"Answer","text":"That's usually fine. I work with tools that expose an API or webhook, including HubSpot, Pipedrive, Salesforce, Airtable, Google Workspace, Slack, Stripe, and many industry-specific platforms. Bring your current stack to the call. I'll tell you what's straightforward, what needs custom work, and what I wouldn't automate."}},
         {"@type":"Question","name":"What happens if something breaks?","acceptedAnswer":{"@type":"Answer","text":"The system should tell you. Workflows are built with retries and failure handling. If a step continues to fail, you'll receive an alert with enough information to understand what happened and finish the task manually if needed. An automation that fails silently isn't automated. It's a liability."}},
         {"@type":"Question","name":"Where does my data live?","acceptedAnswer":{"@type":"Answer","text":"The workflows run on infrastructure you own rather than inside a platform that I control. That means you control the server, credentials, workflows, and data moving through them. We'll also scope access around the systems the workflow actually needs."}},
-        {"@type":"Question","name":"Am I locked into n8n or another platform?","acceptedAnswer":{"@type":"Answer","text":"No. I use n8n for many builds because it gives small businesses a flexible, self-hosted alternative to per-task automation platforms like Zapier and Make. The important part is ownership. You own the infrastructure and the workflows."}},
+        {"@type":"Question","name":"Am I locked into n8n or another platform?","acceptedAnswer":{"@type":"Answer","text":"No. I use n8n for many builds because it gives growing teams a flexible, self-hosted alternative to per-task automation platforms like Zapier and Make. The important part is ownership. You own the infrastructure and the workflows."}},
         {"@type":"Question","name":"What do I actually get at the end?","acceptedAnswer":{"@type":"Answer","text":"A working automation, your workflows and code, your infrastructure and credentials, plus documentation explaining how the system works. Handover includes a recorded walkthrough and written runbook so someone on your team can understand and operate it."}},
         {"@type":"Question","name":"What happens after the build?","acceptedAnswer":{"@type":"Answer","text":"You can run it yourself, or I can stay involved through ongoing monitoring and changes for $1,200/month. There is no requirement to stay on a retainer to keep your system running."}},
-        {"@type":"Question","name":"Do you work with businesses outside Los Angeles?","acceptedAnswer":{"@type":"Answer","text":"Yes. Everything is remote and I work with small businesses across the United States."}}
+        {"@type":"Question","name":"Do you work with companies outside Los Angeles?","acceptedAnswer":{"@type":"Answer","text":"Yes. Everything is remote, so location isn't a factor. I take on Series A-B and mid-market companies in the United States and Europe."}}
       ]
     }
   ]
@@ -926,6 +939,12 @@
 <script>
 (function(){
   document.documentElement.classList.add('js');
+
+  document.querySelectorAll('.email-link').forEach(function(el){
+    var addr = el.getAttribute('data-email-user') + '@' + el.getAttribute('data-email-host');
+    el.href = 'mailto:' + addr;
+    el.textContent = addr;
+  });
 
   var header = document.querySelector('.site-header');
   var progress = document.querySelector('.scroll-progress');
