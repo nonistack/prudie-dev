@@ -310,18 +310,14 @@
   <section id="links" class="reveal">
     <div class="wrap">
       <div class="sec-head">
-        <h2>See the code and the walkthrough</h2>
-        <p>The actual build, in the open.</p>
+        <h2>Stop paying someone to key in invoices by hand</h2>
+        <p>$9.40 an invoice adds up fast at any real volume.</p>
       </div>
       <p>The <a href="https://github.com/nonistack/case-study-02-document-extraction/blob/main/workflow.json">workflow</a>, the validation rules, and the review UI are all in the <a href="https://github.com/nonistack/case-study-02-document-extraction">public repository</a>, runnable end to end with one Docker Compose command, along with a script that generates 20 synthetic test invoices covering the failure cases above.</p>
-      <div class="slot">
-        <b>Walkthrough video goes here</b>
-        <!-- TODO: embed the Loom walkthrough here -->
-        A recorded walkthrough is coming soon.
-      </div>
+      <p>Bring me your invoice volume and your accounting system. In 20 minutes we'll map what this looks like built around your stack.</p>
       <div class="link-row">
-        <a class="btn" href="https://cal.com/prudie/20min">Book a 20-minute call</a>
-        <p class="reassure">Prefer email? <a href="mailto:hello@prudie.dev">hello@prudie.dev</a></p>
+        <a class="btn" href="https://cal.com/prudie/20min">Book a call to automate invoice entry</a>
+        <p class="reassure">Prefer email? <a class="email-link" data-email-user="hello" data-email-host="prudie.dev" href="#">hello (at) prudie.dev</a></p>
       </div>
     </div>
   </section>
@@ -360,6 +356,12 @@
 <script>
 (function(){
   document.documentElement.classList.add('js');
+
+  document.querySelectorAll('.email-link').forEach(function(el){
+    var addr = el.getAttribute('data-email-user') + '@' + el.getAttribute('data-email-host');
+    el.href = 'mailto:' + addr;
+    el.textContent = addr;
+  });
 
   var header = document.querySelector('.site-header');
   var progress = document.querySelector('.scroll-progress');

@@ -311,18 +311,14 @@
   <section id="links" class="reveal">
     <div class="wrap">
       <div class="sec-head">
-        <h2>See the code and the walkthrough</h2>
-        <p>The actual build, in the open.</p>
+        <h2>Stop losing leads to slow handoffs</h2>
+        <p>Every day this isn't running is another lead going cold.</p>
       </div>
-      <p>The <a href="https://github.com/nonistack/case-study-01-lead-routing/blob/main/workflow.json">workflow</a>, the routing rules, and the error handling are all in the <a href="https://github.com/nonistack/case-study-01-lead-routing">public repository</a>, runnable end to end with one Docker Compose command, along with a short recorded walkthrough of the system running.</p>
-      <div class="slot">
-        <b>Walkthrough video goes here</b>
-        <!-- TODO: embed the Loom walkthrough here -->
-        A recorded walkthrough is coming soon.
-      </div>
+      <p>The <a href="https://github.com/nonistack/case-study-01-lead-routing/blob/main/workflow.json">workflow</a>, the routing rules, and the error handling are all in the <a href="https://github.com/nonistack/case-study-01-lead-routing">public repository</a>, runnable end to end with one Docker Compose command.</p>
+      <p>Bring me your intake, your CRM, and the rules you already use to decide who gets what. In 20 minutes we'll map what this looks like built around your stack.</p>
       <div class="link-row">
-        <a class="btn" href="https://cal.com/prudie/20min">Book a 20-minute call</a>
-        <p class="reassure">Prefer email? <a href="mailto:hello@prudie.dev">hello@prudie.dev</a></p>
+        <a class="btn" href="https://cal.com/prudie/20min">Book a call to stop losing leads</a>
+        <p class="reassure">Prefer email? <a class="email-link" data-email-user="hello" data-email-host="prudie.dev" href="#">hello (at) prudie.dev</a></p>
       </div>
     </div>
   </section>
@@ -361,6 +357,12 @@
 <script>
 (function(){
   document.documentElement.classList.add('js');
+
+  document.querySelectorAll('.email-link').forEach(function(el){
+    var addr = el.getAttribute('data-email-user') + '@' + el.getAttribute('data-email-host');
+    el.href = 'mailto:' + addr;
+    el.textContent = addr;
+  });
 
   var header = document.querySelector('.site-header');
   var progress = document.querySelector('.scroll-progress');

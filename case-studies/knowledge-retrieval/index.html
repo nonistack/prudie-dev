@@ -319,19 +319,14 @@
   <section id="links" class="reveal">
     <div class="wrap">
       <div class="sec-head">
-        <h2>See the code and the walkthrough</h2>
-        <p>The actual build, in the open.</p>
+        <h2>Stop guessing what your documents say</h2>
+        <p>A wrong answer costs more than the question did.</p>
       </div>
       <p>The <a href="https://github.com/nonistack/case-study-03-knowledge-retrieval/blob/main/workflow.json">workflow</a>, the retrieval service, and the eval harness are all in the <a href="https://github.com/nonistack/case-study-03-knowledge-retrieval">public repository</a>, runnable end to end with Docker Compose, along with 15 synthetic policy documents and the full eval report with real numbers.</p>
-      <p>Sitting on policy or procedure documents your team can't send to a third-party AI, and can't afford to get a wrong answer from either? That's exactly what this gets built around: your documents, your infrastructure, your numbers instead of mine.</p>
-      <div class="slot">
-        <b>Walkthrough video goes here</b>
-        <!-- TODO: embed the Loom walkthrough here -->
-        A recorded walkthrough is coming soon.
-      </div>
+      <p>Sitting on policy or procedure documents your team can't send to a third-party AI, and can't afford to get a wrong answer from either? Bring me those documents. In 20 minutes we'll map what this looks like built around your infrastructure, your data, your numbers instead of mine.</p>
       <div class="link-row">
-        <a class="btn" href="https://cal.com/prudie/20min">Book a 20-minute call</a>
-        <p class="reassure">Prefer email? <a href="mailto:hello@prudie.dev">hello@prudie.dev</a></p>
+        <a class="btn" href="https://cal.com/prudie/20min">Book a call to build this for your team</a>
+        <p class="reassure">Prefer email? <a class="email-link" data-email-user="hello" data-email-host="prudie.dev" href="#">hello (at) prudie.dev</a></p>
       </div>
     </div>
   </section>
@@ -370,6 +365,12 @@
 <script>
 (function(){
   document.documentElement.classList.add('js');
+
+  document.querySelectorAll('.email-link').forEach(function(el){
+    var addr = el.getAttribute('data-email-user') + '@' + el.getAttribute('data-email-host');
+    el.href = 'mailto:' + addr;
+    el.textContent = addr;
+  });
 
   var header = document.querySelector('.site-header');
   var progress = document.querySelector('.scroll-progress');
