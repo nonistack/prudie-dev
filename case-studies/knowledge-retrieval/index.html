@@ -209,7 +209,7 @@
         <a class="back" href="/#cases">&larr; All case studies</a>
         <div class="status">Composite example</div>
         <h1>Knowledge retrieval, with a measured refusal gate</h1>
-        <p class="lede">A support team can't send internal policy documents to a third-party AI tool, and can't afford a confidently wrong answer either. This system retrieves from your own documents, cites the specific chunk behind every claim, and refuses when the evidence isn't there, with a 50-question eval harness measuring exactly how often, instead of a demo that only shows the good answers.</p>
+        <p class="lede">A wrong answer costs more than no answer. This system cites the exact chunk behind every claim it makes, and refuses instead of guessing when the evidence isn't there, <strong>100%</strong> of the time on out-of-corpus questions across a 50-question eval. Not a demo that shows the good answer and hides the rest. Measured.</p>
       </div>
       <aside class="glance-card" aria-labelledby="glance-heading">
         <div class="glance-head" id="glance-heading">At a glance</div>
@@ -229,7 +229,7 @@
       <p>What actually blocks this project.</p>
     </div>
     <p>A support team working from internal policy and procedure documents needs answers fast, but the documents themselves, refund limits, retention periods, security procedures, are exactly the kind of data a compliance team won't let near a third-party AI API. That rules out most off-the-shelf AI assistants before the first demo.</p>
-    <p>Even a fully local model doesn't solve the harder problem: a fluent, well-formatted, wrong answer is worse than no answer at all. A misquoted refund limit or an invented policy number becomes a real problem the moment a busy agent repeats it to a customer. Most retrieval demos never measure this. They show one good answer and never say what happens on the other forty-nine.</p>
+    <p>Even a fully local model doesn't solve the harder problem: a fluent, well-formatted, wrong answer is worse than no answer at all. One misquoted refund limit repeated to a customer, one invented policy number in an audit trail, and the tool that was supposed to save time now costs more to clean up. Most retrieval demos never measure this. They show <strong>1</strong> good answer and never say what happens on the other <strong>49</strong>.</p>
   </section>
 
   <section id="what-i-built" class="wrap reveal">
@@ -237,7 +237,7 @@
       <h2>What I built: retrieval you can point to, and a gate that means it</h2>
       <p>The system that replaced guessing.</p>
     </div>
-    <p>A self-hosted retrieval pipeline that combines keyword search and vector search over your own documents, reranks the results, and generates an answer that's prompted to cite the exact chunk behind every claim. When retrieval confidence is low, or the model can't produce a properly cited answer, the system refuses and escalates instead of guessing, and every query is logged. A 40-question golden set plus 10 out-of-corpus questions run against the live stack through a real eval harness, with the actual numbers below, not cherry-picked ones.</p>
+    <p>A self-hosted retrieval pipeline that combines keyword search and vector search over your own documents, reranks the results, and generates an answer that's prompted to cite the exact chunk behind every claim. When retrieval confidence is low, or the model can't produce a properly cited answer, the system refuses and escalates instead of guessing, and every query is logged. <strong>50</strong> real test questions, <strong>40</strong> answerable and <strong>10</strong> not, run against the live stack through a real eval harness. The numbers below are what that harness actually returned, not the ones that made the demo look good.</p>
   </section>
 
   <section id="architecture" class="wrap reveal">
@@ -305,14 +305,15 @@
       <h2>The result</h2>
       <p>Real numbers, from the live stack.</p>
     </div>
-    <p>Most retrieval-augmented demos assume the retrieval works and never check. This one ships with a 40-question golden set and 10 out-of-corpus questions, run against the actual running stack, not mocked:</p>
+    <p>Most retrieval-augmented demos assume the retrieval works and never check. This one ships with a 40-question golden set and 10 out-of-corpus questions, run against the actual running stack, not mocked. On <strong>10</strong> questions with no answer anywhere in the corpus, absent topics, near-misses, false premises, it never guessed once:</p>
     <div class="stats">
+      <div class="stat"><b>0%</b><span>Wrong answers on questions with no answer in the corpus</span></div>
       <div class="stat"><b>92%</b><span>Retrieval hit rate @5</span></div>
       <div class="stat"><b>100%</b><span>Refusal rate, out-of-corpus questions</span></div>
-      <div class="stat"><b>10%</b><span>False refusal rate, answerable questions</span></div>
       <div class="stat"><b>78%</b><span>Citations judged as actually supporting the claim</span></div>
     </div>
-    <p style="margin-top:1.5rem">The two numbers worth reading together: across 10 questions with no answer anywhere in the corpus, absent topics, near-misses, false premises, the system never guessed once. The honest cost of that is the 10% false refusal rate: a locally-run model held to a hard citation format occasionally declines a question it could have answered. A system that refuses everything would trivially score 100% on the first number; reporting the second next to it is the point.</p>
+    <p style="margin-top:1.5rem">The number that costs something is the <strong>10%</strong> false refusal rate: a locally-run model, held to a hard citation format, occasionally declines a question it could have answered. A system that refuses everything scores <strong>100%</strong> on the first number for free. Reporting the honest cost right next to it, instead of hiding it, is the entire point of running the eval at all.</p>
+    <p style="margin-top:1rem">That's the trade a support team is actually weighing: a <strong>0%</strong> chance of a confidently wrong answer reaching a customer, against a model that says "I don't know, ask a person" on <strong>1</strong> in <strong>10</strong> answerable questions. Most teams take that trade the moment they see what a wrong answer already costs them.</p>
   </section>
 
   <section id="links" class="reveal">
@@ -322,6 +323,7 @@
         <p>The actual build, in the open.</p>
       </div>
       <p>The <a href="https://github.com/nonistack/case-study-03-knowledge-retrieval/blob/main/workflow.json">workflow</a>, the retrieval service, and the eval harness are all in the <a href="https://github.com/nonistack/case-study-03-knowledge-retrieval">public repository</a>, runnable end to end with Docker Compose, along with 15 synthetic policy documents and the full eval report with real numbers.</p>
+      <p>Sitting on policy or procedure documents your team can't send to a third-party AI, and can't afford to get a wrong answer from either? That's exactly what this gets built around: your documents, your infrastructure, your numbers instead of mine.</p>
       <div class="slot">
         <b>Walkthrough video goes here</b>
         <!-- TODO: embed the Loom walkthrough here -->
