@@ -105,12 +105,6 @@
   .hero-actions .btn-quiet{color:rgba(255,255,255,.85);border-bottom-color:rgba(255,255,255,.4)}
   .hero-actions .btn-quiet:hover{color:#fff;border-color:#fff}
   .reassure{font-family:Archivo;font-size:0.8125rem;color:rgba(255,255,255,.55);margin-top:1rem}
-  .hero-proof{list-style:none;display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;margin:1.1rem 0 0;padding:0}
-  .hero-proof a{font-family:Archivo;font-weight:600;font-size:.8125rem;color:#fff;text-decoration:none;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:.4rem .85rem;display:inline-flex;align-items:center;gap:.35rem;transition:background .15s ease,border-color .15s ease}
-  .hero-proof a:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.32)}
-  .hero-proof a b{font-weight:700;background-image:var(--gradient);background-clip:text;-webkit-background-clip:text;color:transparent}
-  .hero-proof-note{width:100%;font-family:Archivo;font-size:.75rem;color:rgba(255,255,255,.5)}
-  @media (max-width:560px){.hero-proof-note{width:auto}}
 
   .btn{font-family:Archivo;font-weight:500;font-size:0.9375rem;background:var(--ink);color:var(--paper);padding:0.8rem 1.4rem;border-radius:8px;text-decoration:none;display:inline-block;transition:filter .15s ease,transform .15s ease,box-shadow .15s ease}
   .btn:hover{filter:brightness(1.3);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
@@ -370,6 +364,9 @@
   .book .reassure{margin-top:1rem;color:rgba(255,255,255,.55)}
   .book .reassure a{color:#fff;border-bottom:1px solid rgba(255,255,255,.4)}
 
+  .fine-print{padding-top:2rem;font-family:Archivo;font-size:0.75rem;line-height:1.5;color:var(--ink-soft);opacity:.75;max-width:var(--measure)}
+  .fine-print a{color:var(--ink-soft)}
+
   footer{border-top:1px solid var(--rule);padding-block:2rem 3rem;font-family:Archivo;font-size:0.8125rem;color:var(--ink-soft);display:flex;flex-wrap:wrap;gap:.75rem 2rem;justify-content:space-between}
   footer a{color:var(--ink-soft)}
 </style>
@@ -397,17 +394,12 @@
     <div class="wrap hero-grid">
       <div class="hero-copy">
         <h1>Stop losing leads to broken handoffs.</h1>
-        <p class="lede">A 30-minute response delay cuts your odds of qualifying a lead by 21x, according to a <a href="/case-studies/lead-routing/#result">2007 study of 15,000+ leads</a>. This routes every lead in under 5 seconds, automatically.</p>
+        <p class="lede">A 30-minute response delay cuts your odds of qualifying a lead by 21x.<sup>*</sup> This routes every lead in under 5 seconds, automatically.</p>
         <div class="hero-actions">
           <a class="btn" href="#book">Book a 20-minute call</a>
           <a class="btn-quiet" href="#offers">See pricing</a>
         </div>
         <p class="reassure">Fixed price agreed before work starts. You own the code, workflows, and infrastructure.</p>
-        <ul class="hero-proof" aria-label="Measured results from a live case study">
-          <li><a href="/case-studies/knowledge-retrieval/"><b>92%</b> retrieval hit rate</a></li>
-          <li><a href="/case-studies/knowledge-retrieval/"><b>100%</b> refusal on out-of-corpus questions</a></li>
-          <li class="hero-proof-note">Measured on a 50-question eval harness run against the live stack.</li>
-        </ul>
       </div>
 
       <aside class="pipeline-card" aria-labelledby="pipeline-heading">
@@ -876,6 +868,8 @@
     </div>
   </section>
 </main>
+
+<p class="fine-print wrap">* 21x qualification-odds figure from a 2007 Lead Response Management study of InsideSales.com data, 15,000+ leads across six companies, analyzed by MIT Sloan researcher James Oldroyd. <a href="https://www.leadresponsemanagement.org/lrm_study/">Source</a>.</p>
 
 <footer class="wrap">
   <div>Prudie.dev, Grace Ene. Los Angeles, California.</div>
