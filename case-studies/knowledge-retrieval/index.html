@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0A0E1C">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<!-- TEMPORARY - relink when this case study represents a paid client engagement -->
+<meta name="robots" content="noindex, nofollow">
+
+<title>Knowledge retrieval case study: hybrid RAG with a measured refusal gate | Prudie.dev</title>
+<meta name="description" content="A self-hosted RAG pipeline that retrieves from your own policy documents, cites the specific chunk behind every claim, and refuses rather than guesses, with real numbers from a 50-question eval harness instead of a demo.">
+<link rel="canonical" href="https://prudie.dev/case-studies/knowledge-retrieval/">
+
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://prudie.dev/case-studies/knowledge-retrieval/">
+<meta property="og:title" content="Knowledge retrieval, with a measured refusal gate">
+<meta property="og:description" content="Hybrid retrieval, cited answers, and a refusal gate for high-stakes questions, measured with a real eval harness: 92% retrieval hit rate, 100% refusal on out-of-corpus questions.">
+<meta property="og:image" content="https://prudie.dev/grace@2x.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --paper:#F8F6F1;
+    --paper-lift:#FFFFFF;
+    --ink:#1B2A4A;
+    --ink-soft:#3E5266;
+    --rule:#E3E1DA;
+    --teal:#22A794;
+    --blue:#2B7FFE;
+    --violet:#5867EF;
+    --gradient:linear-gradient(135deg,#22A794 0%,#2B7FFE 50%,#5867EF 100%);
+    --gradient-cta:linear-gradient(135deg,#1B7970 0%,#215DBA 50%,#414CB0 100%);
+    --navy-deep:#0A0E1C;
+    --glow-teal:rgba(34,167,148,.35);
+    --glow-blue:rgba(43,127,254,.35);
+    --glow-violet:rgba(88,103,239,.35);
+    --measure:62ch;
+    --gutter:clamp(1.25rem,5vw,4.5rem);
+    --radius:14px;
+    --radius-sm:9px;
+    --shadow-sm:0 1px 2px rgba(10,14,28,.08);
+    --shadow-md:0 18px 36px -20px rgba(10,14,28,.24);
+    --ease:cubic-bezier(.22,.8,.32,1);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);overflow-x:hidden;
+    font-family:"Source Serif 4",Georgia,serif;
+    font-size:clamp(1rem,0.96rem + 0.2vw,1.0625rem);line-height:1.65;
+  }
+  h1,h2,h3,.ui{font-family:Archivo,system-ui,sans-serif}
+  a{color:inherit}
+  :focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+  img{max-width:100%;display:block}
+  svg{display:block}
+
+  .wrap{max-width:72rem;margin:0 auto;padding-inline:var(--gutter)}
+  .glow-blob{position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+
+  .scroll-progress{position:fixed;top:0;left:0;height:2px;background:var(--gradient);width:0%;z-index:70}
+
+  .site-header{position:sticky;top:0;z-index:60;background:var(--navy-deep)}
+  .site-header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background-image:var(--gradient);opacity:0;transition:opacity .3s var(--ease)}
+  .site-header.is-scrolled{box-shadow:0 8px 24px -12px rgba(0,0,0,.5)}
+  .site-header.is-scrolled::after{opacity:1}
+  .masthead{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;padding-block:1.5rem}
+  .mark{font-family:Archivo;font-weight:600;font-size:1.0625rem;letter-spacing:-0.02em;text-decoration:none;color:#fff}
+  .mark span{color:#fff}
+  .masthead nav{font-family:Archivo;font-size:0.9375rem;display:flex;gap:1.5rem}
+  .masthead nav a{position:relative;color:rgba(255,255,255,.72);text-decoration:none;padding-bottom:3px}
+  .masthead nav a::after{content:"";position:absolute;left:0;right:100%;bottom:0;height:1px;background:var(--blue);transition:right .25s var(--ease)}
+  .masthead nav a:hover{color:#fff}
+  .masthead nav a:hover::after{right:0}
+  @media (max-width:560px){.masthead nav a:nth-child(1){display:none}}
+
+  .hero{position:relative;overflow:hidden;background:var(--navy-deep);padding-block:clamp(2.5rem,7vw,4.5rem) clamp(2rem,5vw,3rem)}
+  .hero .glow-blob{width:440px;height:440px;top:-140px;right:-100px;background:radial-gradient(circle,var(--glow-violet),transparent 70%);opacity:.6}
+  .hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:1fr;gap:clamp(2rem,5vw,3.5rem);align-items:start}
+  @media (min-width:960px){.hero-grid{grid-template-columns:1.15fr .85fr}}
+  .back{font-family:Archivo;font-size:0.875rem;color:rgba(255,255,255,.75);text-decoration:none;border-bottom:1px solid rgba(255,255,255,.35);padding-bottom:2px}
+  .back:hover{color:#fff;border-color:#fff}
+  .status{font-family:Archivo;font-size:0.75rem;font-weight:500;color:rgba(255,255,255,.65);white-space:nowrap;display:inline-flex;align-items:center;gap:.45rem;margin-top:1.5rem}
+  .status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--teal);flex:none}
+  @media (prefers-reduced-motion:no-preference){.status::before{animation:pulse 2.2s ease-in-out infinite}}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
+  h1{font-weight:600;font-size:clamp(1.9rem,1.2rem + 2.8vw,3.1rem);line-height:1.07;letter-spacing:-0.03em;margin:0.6rem 0 0;max-width:19ch;color:#fff}
+  .lede{max-width:var(--measure);margin:1.5rem 0 0;color:rgba(255,255,255,.72)}
+
+  .glance-card{background:var(--paper-lift);border:1px solid var(--rule);border-radius:var(--radius);box-shadow:0 30px 70px -24px rgba(0,0,0,.6),0 0 50px -14px var(--glow-teal),0 0 0 1px rgba(255,255,255,.06);padding:1.5rem 1.6rem;margin-top:.5rem}
+  .glance-head{font-family:Archivo;font-weight:600;font-size:.8125rem;color:var(--ink-soft);margin-bottom:1.1rem}
+  .glance-card dl{margin:0;display:grid;gap:.9rem}
+  .glance-card div{display:flex;justify-content:space-between;gap:1rem;border-top:1px solid var(--rule);padding-top:.9rem}
+  .glance-card div:first-child{border-top:0;padding-top:0}
+  .glance-card dt{font-family:Archivo;font-size:.875rem;color:var(--ink-soft);margin:0}
+  .glance-card dd{font-family:Archivo;font-size:.875rem;font-weight:500;margin:0;text-align:right}
+  @media (max-width:960px){.glance-card{max-width:22rem}}
+
+  .btn{font-family:Archivo;font-weight:500;font-size:0.9375rem;background-image:var(--gradient-cta);color:#fff;padding:0.8rem 1.4rem;border-radius:8px;text-decoration:none;display:inline-block;box-shadow:0 12px 30px -12px var(--glow-violet);transition:filter .15s ease,transform .15s ease,box-shadow .15s ease}
+  .btn:hover{filter:brightness(1.12);transform:translateY(-1px);box-shadow:0 16px 36px -12px var(--glow-blue)}
+  .btn:active{transform:translateY(0)}
+  .btn-quiet{font-family:Archivo;font-size:0.9375rem;color:rgba(255,255,255,.85);text-decoration:none;border-bottom:1px solid rgba(255,255,255,.4);padding-bottom:2px;transition:color .15s ease,border-color .15s ease}
+  .btn-quiet:hover{color:#fff;border-color:#fff}
+
+  /* scroll reveal */
+  .reveal{opacity:1;transform:none}
+  @media (prefers-reduced-motion:no-preference){
+    html.js .reveal{opacity:0;transform:translateY(16px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+    html.js .reveal.is-visible{opacity:1;transform:none}
+  }
+
+  section{padding-block:clamp(3rem,7vw,5rem)}
+  .sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:2rem;border-top:1px solid var(--rule);padding-top:1.1rem;margin-bottom:2rem}
+  h2{font-weight:600;font-size:clamp(1.35rem,1.1rem + .7vw,1.75rem);letter-spacing:-0.025em;margin:0;max-width:26ch}
+  .sec-head p{margin:0;color:var(--ink-soft);font-size:0.9375rem;max-width:32ch;text-align:right}
+  @media (max-width:640px){.sec-head{flex-direction:column;gap:.6rem}.sec-head p{text-align:left}}
+  section > p{max-width:var(--measure);margin:0 0 1rem}
+  section > p:last-child{margin-bottom:0}
+
+  .stages{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:2rem}
+  .stage{background:var(--paper-lift);border:1px solid var(--rule);border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);padding:1.4rem 1.3rem;transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
+  .stage:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+  .stage-icon{width:30px;height:30px;border-radius:50%;background:var(--paper);display:flex;align-items:center;justify-content:center;margin-bottom:.9rem}
+  .stage-icon svg{width:15px;height:15px;stroke:var(--teal)}
+  .stage:nth-child(2) .stage-icon svg{stroke:var(--blue)}
+  .stage:nth-child(3) .stage-icon svg{stroke:var(--violet)}
+  .stage:nth-child(4) .stage-icon svg{stroke:var(--teal)}
+  .stage b{display:block;font-family:Archivo;font-weight:600;font-size:0.9375rem;letter-spacing:-0.015em}
+  .stage p{margin:.4rem 0 0;color:var(--ink-soft);font-size:0.875rem}
+  @media (max-width:760px){
+    .stages{grid-template-columns:1fr}
+  }
+
+  .slot{border:1px dashed var(--rule);border-radius:var(--radius-sm);padding:2.5rem 1.5rem;margin-top:2rem;text-align:center;font-family:Archivo;font-size:0.875rem;color:var(--ink-soft)}
+  .slot b{display:block;color:var(--ink);font-weight:500;margin-bottom:.3rem}
+
+  .shot{margin:2rem 0 0}
+  .shot img{border:1px solid var(--rule);border-radius:var(--radius-sm);box-shadow:var(--shadow-md);width:100%;cursor:zoom-in;transition:filter .15s ease}
+  .shot img:hover{filter:brightness(1.04)}
+  .shot figcaption{font-family:Archivo;font-size:0.8125rem;color:var(--ink-soft);margin-top:.75rem;max-width:var(--measure)}
+  .shot-detail{margin-top:2.5rem}
+  .shot-detail img{width:auto;max-width:100%}
+
+  .lightbox{position:fixed;inset:0;background:rgba(5,7,14,.94);display:none;align-items:center;justify-content:center;z-index:100;padding:clamp(1rem,4vw,3rem);cursor:zoom-out}
+  .lightbox.is-open{display:flex}
+  .lightbox img{max-width:100%;max-height:100%;border-radius:var(--radius-sm);box-shadow:0 30px 80px -20px rgba(0,0,0,.7);cursor:zoom-out}
+  .lightbox-close{position:fixed;top:1.25rem;right:1.5rem;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+  .lightbox-close:hover{background:rgba(255,255,255,.18)}
+  .lightbox-close svg{width:18px;height:18px;stroke:#fff}
+
+  .recover dl{margin:2rem 0 0;display:grid;gap:1.4rem}
+  .recover dt{font-family:Archivo;font-weight:500;font-size:0.9375rem;letter-spacing:-0.01em}
+  .recover dd{margin:.35rem 0 0;color:var(--ink-soft);max-width:var(--measure)}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin:2rem 0 0}
+  .stat{background:var(--paper-lift);border:1px solid var(--rule);border-radius:var(--radius-sm);box-shadow:var(--shadow-sm);padding:1.3rem 1.2rem}
+  .stat b{display:block;font-family:Archivo;font-weight:600;font-size:1.75rem;letter-spacing:-0.02em;color:var(--ink)}
+  .stat span{display:block;font-family:Archivo;font-size:0.8125rem;color:var(--ink-soft);margin-top:.3rem}
+  @media (max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}}
+
+  .link-row{display:flex;flex-direction:column;align-items:center;gap:1rem;margin-top:2rem;text-align:center}
+
+  #links{position:relative;background:var(--navy-deep)}
+  #links .wrap > p{max-width:var(--measure);margin:0 0 1rem;color:rgba(255,255,255,.72)}
+  #links .wrap > p a{color:#fff}
+  #links .sec-head{border-top-color:rgba(255,255,255,.14)}
+  #links .sec-head h2{color:#fff}
+  #links .sec-head p{color:rgba(255,255,255,.6)}
+  #links .slot{border-color:rgba(255,255,255,.25);color:rgba(255,255,255,.6)}
+  #links .slot b{color:#fff}
+  .reassure{font-family:Archivo;font-size:0.8125rem;color:rgba(255,255,255,.55);margin:0}
+  .reassure a{color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.4)}
+
+  footer{border-top:1px solid var(--rule);padding-block:2rem 3rem;font-family:Archivo;font-size:0.8125rem;color:var(--ink-soft);display:flex;flex-wrap:wrap;gap:.75rem 2rem;justify-content:space-between}
+  footer a{color:var(--ink-soft)}
+</style>
+</head>
+<body>
+
+<div class="scroll-progress" aria-hidden="true"></div>
+
+<header class="site-header">
+  <div class="wrap masthead">
+    <a class="mark" href="/">prudie<span>.dev</span></a>
+    <nav>
+      <a href="/#offers">Pricing</a>
+      <a href="/#cases">Case studies</a>
+      <a href="/#about">About</a>
+      <a href="/#faq">FAQ</a>
+      <a href="/#book">Book a call</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="glow-blob" aria-hidden="true"></div>
+    <div class="wrap hero-grid">
+      <div>
+        <a class="back" href="/#cases">&larr; All case studies</a>
+        <div class="status">Composite example</div>
+        <h1>Knowledge retrieval, with a measured refusal gate</h1>
+        <p class="lede">A support team can't send internal policy documents to a third-party AI tool, and can't afford a confidently wrong answer either. This system retrieves from your own documents, cites the specific chunk behind every claim, and refuses when the evidence isn't there, with a 50-question eval harness measuring exactly how often, instead of a demo that only shows the good answers.</p>
+      </div>
+      <aside class="glance-card" aria-labelledby="glance-heading">
+        <div class="glance-head" id="glance-heading">At a glance</div>
+        <dl>
+          <div><dt>Status</dt><dd>Composite example</dd></div>
+          <div><dt>Stack</dt><dd>Self-hosted n8n + Qdrant + Ollama</dd></div>
+          <div><dt>Stages</dt><dd>4, plus a hard gate</dd></div>
+          <div><dt>Read time</dt><dd>About 3 minutes</dd></div>
+        </dl>
+      </aside>
+    </div>
+  </div>
+
+  <section id="problem" class="wrap reveal">
+    <div class="sec-head">
+      <h2>The problem: a wrong answer costs more than no answer</h2>
+      <p>What actually blocks this project.</p>
+    </div>
+    <p>A support team working from internal policy and procedure documents needs answers fast, but the documents themselves, refund limits, retention periods, security procedures, are exactly the kind of data a compliance team won't let near a third-party AI API. That rules out most off-the-shelf AI assistants before the first demo.</p>
+    <p>Even a fully local model doesn't solve the harder problem: a fluent, well-formatted, wrong answer is worse than no answer at all. A misquoted refund limit or an invented policy number becomes a real problem the moment a busy agent repeats it to a customer. Most retrieval demos never measure this. They show one good answer and never say what happens on the other forty-nine.</p>
+  </section>
+
+  <section id="what-i-built" class="wrap reveal">
+    <div class="sec-head">
+      <h2>What I built: retrieval you can point to, and a gate that means it</h2>
+      <p>The system that replaced guessing.</p>
+    </div>
+    <p>A self-hosted retrieval pipeline that combines keyword search and vector search over your own documents, reranks the results, and generates an answer that's prompted to cite the exact chunk behind every claim. When retrieval confidence is low, or the model can't produce a properly cited answer, the system refuses and escalates instead of guessing, and every query is logged. A 40-question golden set plus 10 out-of-corpus questions run against the live stack through a real eval harness, with the actual numbers below, not cherry-picked ones.</p>
+  </section>
+
+  <section id="architecture" class="wrap reveal">
+    <div class="sec-head">
+      <h2>How it works: four stages, one hard branch</h2>
+      <p>The pipeline every question moves through.</p>
+    </div>
+    <p>Every question moves through the same four stages. Two independent checks, not one, decide whether an answer ever reaches the person asking.</p>
+    <div class="stages">
+      <div class="stage">
+        <div class="stage-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+        <b>Ingest &amp; chunk</b>
+        <p>PDF, DOCX, and Markdown are split on heading boundaries, not fixed byte counts, and every chunk carries its section breadcrumb so a lone sentence isn't stripped of context.</p>
+      </div>
+      <div class="stage">
+        <div class="stage-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></div>
+        <b>Hybrid retrieve</b>
+        <p>Keyword search catches exact terms embeddings miss, a policy number, a form name; vector search catches paraphrases. Both run, fused by rank, not by a hand-tuned weight.</p>
+      </div>
+      <div class="stage">
+        <div class="stage-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H6a2 2 0 0 0-2 2v2M16 3h2a2 2 0 0 1 2 2v2M8 21H6a2 2 0 0 1-2-2v-2M16 21h2a2 2 0 0 0 2-2v-2"/></svg></div>
+        <b>Rerank &amp; generate</b>
+        <p>A cross-encoder reranks the fused candidates for relevance, then a local model is prompted to answer only from what's in front of it, every claim ending in a citation.</p>
+      </div>
+      <div class="stage">
+        <div class="stage-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4z"/></svg></div>
+        <b>Refuse or answer</b>
+        <p>Low retrieval confidence, or an answer with no valid citation, routes to a fixed escalation message. Nothing else in the system can produce a best-guess answer.</p>
+      </div>
+    </div>
+    <figure class="shot">
+      <img src="workflow-canvas.jpg" alt="The full n8n workflow canvas: a webhook triggers hybrid retrieval, a confidence check branches into either generation with citation validation or an immediate low-confidence refusal, both paths converge on a Postgres logging step, then the response is returned. A second, separate flow handles thumbs up/down feedback.">
+      <figcaption>The real workflow canvas. The confidence branch on the left is the whole point: one path generates and validates citations, the other refuses before generation ever runs.</figcaption>
+    </figure>
+    <figure class="shot shot-detail">
+      <img src="answer-detail.jpg" alt="The assistant UI answering a question about part-time PTO accrual, citing two separate sections of the same policy document, section 9 for the part-time modifier and section 2 for the base full-time rate, and correctly combining them into a single numeric answer.">
+      <figcaption>A real answer that needed two chunks from opposite ends of the same document to get right, and cited both.</figcaption>
+    </figure>
+  </section>
+
+  <section id="failures" class="wrap reveal recover">
+    <div class="sec-head">
+      <h2>How failures are handled: refusal is a feature, not a bug</h2>
+      <p>What happens when the evidence isn't there.</p>
+    </div>
+    <p>The model is allowed to not know something. It is never allowed to sound confident about it.</p>
+    <dl>
+      <dt>Nothing relevant retrieved</dt>
+      <dd>If the best reranked match scores below a threshold, the system refuses immediately and never calls the generation model at all. This is what catches genuinely out-of-corpus questions.</dd>
+      <dt>Related, but not an answer</dt>
+      <dd>Retrieval can return chunks that are topically related without stating the specific fact asked. The model is prompted to say so explicitly rather than fill the gap with an inference.</dd>
+      <dt>An answer with no real citation</dt>
+      <dd>The workflow checks that every citation marker in the output actually resolves to a chunk it was shown. An answer that fails this check is discarded and escalated, never shown uncited.</dd>
+      <dt>Two documents that disagree</dt>
+      <dd>The corpus deliberately includes two policies that state different numbers for the same thing. The model is prompted to surface the disagreement and cite both, not silently pick one.</dd>
+    </dl>
+    <figure class="shot">
+      <img src="refusal-detail.jpg" alt="The assistant UI showing a refused question about a 401k matching program, marked REFUSED AND ESCALATED, with the message: I don't have enough information in the knowledge base to answer this confidently. This has been flagged for a human to review.">
+      <figcaption>A real refusal: nothing in the corpus addresses this topic, so the system says so instead of guessing.</figcaption>
+    </figure>
+  </section>
+
+  <section id="result" class="wrap reveal">
+    <div class="sec-head">
+      <h2>The result</h2>
+      <p>Real numbers, from the live stack.</p>
+    </div>
+    <p>Most retrieval-augmented demos assume the retrieval works and never check. This one ships with a 40-question golden set and 10 out-of-corpus questions, run against the actual running stack, not mocked:</p>
+    <div class="stats">
+      <div class="stat"><b>92%</b><span>Retrieval hit rate @5</span></div>
+      <div class="stat"><b>100%</b><span>Refusal rate, out-of-corpus questions</span></div>
+      <div class="stat"><b>10%</b><span>False refusal rate, answerable questions</span></div>
+      <div class="stat"><b>78%</b><span>Citations judged as actually supporting the claim</span></div>
+    </div>
+    <p style="margin-top:1.5rem">The two numbers worth reading together: across 10 questions with no answer anywhere in the corpus, absent topics, near-misses, false premises, the system never guessed once. The honest cost of that is the 10% false refusal rate: a locally-run model held to a hard citation format occasionally declines a question it could have answered. A system that refuses everything would trivially score 100% on the first number; reporting the second next to it is the point.</p>
+  </section>
+
+  <section id="links" class="reveal">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>See the code and the walkthrough</h2>
+        <p>The actual build, in the open.</p>
+      </div>
+      <p>The <a href="https://github.com/nonistack/case-study-03-knowledge-retrieval/blob/main/workflow.json">workflow</a>, the retrieval service, and the eval harness are all in the <a href="https://github.com/nonistack/case-study-03-knowledge-retrieval">public repository</a>, runnable end to end with Docker Compose, along with 15 synthetic policy documents and the full eval report with real numbers.</p>
+      <div class="slot">
+        <b>Walkthrough video goes here</b>
+        <!-- TODO: embed the Loom walkthrough here -->
+        A recorded walkthrough is coming soon.
+      </div>
+      <div class="link-row">
+        <a class="btn" href="https://cal.com/prudie/20min">Book a 20-minute call</a>
+        <p class="reassure">Prefer email? <a href="mailto:hello@prudie.dev">hello@prudie.dev</a></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged screenshot">
+  <button class="lightbox-close" type="button" aria-label="Close">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  </button>
+  <img src="" alt="">
+</div>
+
+<footer class="wrap">
+  <div>Prudie.dev, Grace Ene. Los Angeles, California.</div>
+  <div><a href="mailto:hello@prudie.dev">hello@prudie.dev</a></div>
+</footer>
+
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"TechArticle",
+  "@id":"https://prudie.dev/case-studies/knowledge-retrieval/#article",
+  "headline":"Knowledge retrieval, with a measured refusal gate",
+  "description":"A self-hosted RAG pipeline that retrieves from your own policy documents, cites the specific chunk behind every claim, and refuses rather than guesses, with real numbers from a 50-question eval harness instead of a demo.",
+  "url":"https://prudie.dev/case-studies/knowledge-retrieval/",
+  "mainEntityOfPage":"https://prudie.dev/case-studies/knowledge-retrieval/",
+  "datePublished":"2026-09-03",
+  "dateModified":"2026-09-03",
+  "author":{"@id":"https://prudie.dev/#grace"},
+  "publisher":{"@id":"https://prudie.dev/#business"},
+  "about":{"@id":"https://prudie.dev/#business"},
+  "image":"https://prudie.dev/grace@2x.jpg"
+}
+</script>
+
+<script>
+(function(){
+  document.documentElement.classList.add('js');
+
+  var header = document.querySelector('.site-header');
+  var progress = document.querySelector('.scroll-progress');
+  var onScroll = function(){
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    if(header){ header.classList.toggle('is-scrolled', h.scrollTop > 8); }
+    if(progress){ progress.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%'; }
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, {passive:true});
+
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, {threshold:0.12, rootMargin:'0px 0px -40px 0px'});
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('is-visible'); });
+  }
+
+  var lightbox = document.getElementById('lightbox');
+  var lightboxImg = lightbox.querySelector('img');
+  function openLightbox(img){
+    lightboxImg.src = img.currentSrc || img.src;
+    lightboxImg.alt = img.alt || '';
+    lightbox.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox(){
+    lightbox.classList.remove('is-open');
+    document.body.style.overflow = '';
+    lightboxImg.src = '';
+  }
+  document.querySelectorAll('.shot img').forEach(function(img){
+    img.addEventListener('click', function(){ openLightbox(img); });
+  });
+  lightbox.addEventListener('click', function(){ closeLightbox(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeLightbox(); });
+})();
+</script>
+
+</body>
+</html>
