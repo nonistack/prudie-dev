@@ -97,8 +97,7 @@
   @media (min-width:960px){.hero-grid{grid-template-columns:1.12fr .88fr}}
   h1{font-weight:600;font-size:clamp(2.1rem,1.2rem + 3.6vw,4.05rem);line-height:1.03;letter-spacing:-0.035em;margin:0;max-width:16ch;color:#fff}
   .lede{max-width:var(--measure);margin:1.5rem 0 0;color:rgba(255,255,255,.72)}
-  .lede a{color:#fff;border-bottom:1px solid rgba(255,255,255,.4);text-decoration:none}
-  .lede a:hover{border-color:#fff}
+  .lede .fn{font-size:.6em;vertical-align:top;position:relative;top:.15em;color:rgba(255,255,255,.5)}
   .hero-actions{display:flex;flex-wrap:wrap;gap:1rem 1.75rem;align-items:center;margin-top:2.25rem}
   .hero-actions .btn{background-image:var(--gradient-cta);color:#fff;box-shadow:0 12px 30px -12px var(--glow-violet)}
   .hero-actions .btn:hover{filter:brightness(1.12);box-shadow:0 16px 36px -12px var(--glow-blue)}
@@ -364,7 +363,7 @@
   .book .reassure{margin-top:1rem;color:rgba(255,255,255,.55)}
   .book .reassure a{color:#fff;border-bottom:1px solid rgba(255,255,255,.4)}
 
-  .fine-print{padding-top:2rem;font-family:Archivo;font-size:0.75rem;line-height:1.5;color:var(--ink-soft);opacity:.75;max-width:var(--measure)}
+  .fine-print{padding-top:2rem;font-family:Archivo;font-size:0.75rem;line-height:1.5;color:var(--ink-soft);opacity:.75}
   .fine-print a{color:var(--ink-soft)}
 
   footer{border-top:1px solid var(--rule);padding-block:2rem 3rem;font-family:Archivo;font-size:0.8125rem;color:var(--ink-soft);display:flex;flex-wrap:wrap;gap:.75rem 2rem;justify-content:space-between}
@@ -394,7 +393,7 @@
     <div class="wrap hero-grid">
       <div class="hero-copy">
         <h1>Stop losing leads to broken handoffs.</h1>
-        <p class="lede">A 30-minute response delay cuts your odds of qualifying a lead by 21x.<sup>*</sup> This routes every lead in under 5 seconds, automatically.</p>
+        <p class="lede">A 30-minute response delay cuts your odds of qualifying a lead by 21x<span class="fn">*</span>. This routes every lead in under 5 seconds, automatically.</p>
         <div class="hero-actions">
           <a class="btn" href="#book">Book a 20-minute call</a>
           <a class="btn-quiet" href="#offers">See pricing</a>
